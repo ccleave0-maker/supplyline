@@ -1,0 +1,16 @@
+{
+  "name": "@supplyline/sync",
+  "private": true,
+  "version": "1.0.0",
+  "description": "SupplyLine Sync — network folders for hosted SupplyLine (filing copies and the AP inbox)",
+  "type": "module",
+  "bin": { "supplyline-sync": "supplyline-sync.mjs" },
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node supplyline-sync.mjs",
+    "once": "node supplyline-sync.mjs --once",
+    "check": "node supplyline-sync.mjs --test",
+    "typecheck": "node --check supplyline-sync.mjs",
+    "test": "node --check supplyline-sync.mjs"
+  }
+}

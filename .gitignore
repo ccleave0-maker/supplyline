@@ -1,0 +1,31 @@
+node_modules/
+.next/
+out/
+dist/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Private organization data (real company names, emails) — never commit
+server/prisma/private/*
+!server/prisma/private/*.example.json
+
+# Local file storage used in development
+server/.storage/
+
+# Generated Prisma client
+server/src/generated/
+
+# Native build output
+apps/pc/src-tauri/target/
+apps/ios/ios/App/Pods/
+apps/android/android/.gradle/
+apps/android/android/app/build/
+
+# Database backups (never commit)
+server/backups/

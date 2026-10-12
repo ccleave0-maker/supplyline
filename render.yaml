@@ -1,0 +1,126 @@
+# Render blueprint (not used until you create your Render account).
+# Two environments: staging (try changes first) and production.
+# Secrets are entered in the Render dashboard, never in this file.
+# Deploys are started by GitHub Actions (.github/workflows/deploy.yml) after the tests
+# pass and the database changes are applied — so autoDeploy is off.
+envVarGroups:
+  - name: supplyline-common
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: STORAGE_PROVIDER
+        value: supabase
+      - key: SCHEDULE_TIMEZONE
+        value: America/Vancouver
+      - key: DELIVERY_REMINDERS
+        value: 'on'
+
+services:
+  # ---------------- Production ----------------
+  - type: web
+    name: supplyline-server
+    runtime: docker
+    region: oregon # move to a Canadian host later; the Docker image is portable
+    dockerfilePath: ./server/Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeploy: false
+    envVars:
+      - fromGroup: supplyline-common
+      - key: DATABASE_URL
+        sync: false
+      - key: AUTH_SECRET
+        sync: false
+      - key: ENCRYPTION_KEY
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: EMAIL_PROVIDER
+        value: resend
+      - key: RESEND_API_KEY
+        sync: false
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: EMAIL_FROM_ADDRESS
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_SUBJECT
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRICE_STANDARD
+        sync: false
+      - key: STRIPE_PRICE_PRO
+        sync: false
+      - key: PLATFORM_ANTHROPIC_API_KEY
+        sync: false
+
+  - type: web
+    name: supplyline-web
+    runtime: static
+    autoDeploy: false
+    buildCommand: npm i -g pnpm@12 && pnpm install --frozen-lockfile && pnpm --filter @supplyline/app-web build
+    staticPublishPath: ./apps/web/out
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+
+  # ---------------- Staging (same setup, its own database and keys) ----------------
+  - type: web
+    name: supplyline-server-staging
+    runtime: docker
+    region: oregon
+    plan: starter
+    dockerfilePath: ./server/Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeploy: false
+    envVars:
+      - fromGroup: supplyline-common
+      - key: DATABASE_URL
+        sync: false
+      - key: AUTH_SECRET
+        sync: false
+      - key: ENCRYPTION_KEY
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: EMAIL_PROVIDER
+        value: resend
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM_ADDRESS
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+
+  - type: web
+    name: supplyline-web-staging
+    runtime: static
+    autoDeploy: false
+    buildCommand: npm i -g pnpm@12 && pnpm install --frozen-lockfile && pnpm --filter @supplyline/app-web build
+    staticPublishPath: ./apps/web/out
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        sync: false

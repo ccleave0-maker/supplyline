@@ -1,0 +1,5 @@
+{
+  "server": "https://your-supplyline-address",
+  "key": "sls_paste_the_device_key_here",
+  "intervalSeconds": 60
+}

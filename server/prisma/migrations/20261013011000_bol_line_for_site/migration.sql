@@ -1,0 +1,3 @@
+-- AddForeignKey
+ALTER TABLE "BOLLine" ADD CONSTRAINT "BOLLine_forSiteId_fkey" FOREIGN KEY ("forSiteId") REFERENCES "Site"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+

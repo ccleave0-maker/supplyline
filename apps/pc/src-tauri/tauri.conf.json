@@ -1,0 +1,57 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "SupplyLine",
+  "version": "0.1.0",
+  "identifier": "com.example.supplyline.desktop",
+  "build": {
+    "frontendDist": "../out",
+    "devUrl": "http://localhost:3001",
+    "beforeDevCommand": "pnpm dev",
+    "beforeBuildCommand": "pnpm build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "SupplyLine",
+        "width": 1280,
+        "height": 820,
+        "minWidth": 380,
+        "minHeight": 600,
+        "resizable": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "nsis",
+      "msi"
+    ],
+    "publisher": "Your Name",
+    "copyright": "© Your Name",
+    "category": "Business",
+    "shortDescription": "Construction procurement, from order to site",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEVEOTlFQTRCQTEwN0E4RUMKUldUc3FBZWhTK3FaN1RuT0lDNWdHQ3pFRm95eHk0RFZTMWZxZml5QlVKUHBsM2xJVTYrai9VWWUK",
+      "endpoints": [
+        "https://api.example.com/api/v1/app-updates?target={{target}}&arch={{arch}}&version={{current_version}}"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
+}

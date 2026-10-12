@@ -1,0 +1,2114 @@
+// SupplyLine database schema
+//
+// Tenancy: Platform owner â†’ Organization â†’ Company â†’ Jobs.
+// Yards belong to the Organization and serve one or more companies (YardCompany).
+// Every tenant row carries organizationId; the server scopes every query by it.
+// Quantities: Decimal(14,3). Money: Decimal(14,2). Unit cost: Decimal(14,4). Currency is CAD.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Enums â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+enum OrgStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum Role {
+  SITE
+  YARD
+  PROCUREMENT
+  ADMIN
+  AP // accounts payable / receivable
+}
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+}
+
+enum SiteType {
+  JOB
+  YARD
+}
+
+enum EmailRecipientKind {
+  PROCUREMENT
+  YARD
+  CC
+}
+
+enum OrderStatus {
+  DRAFT
+  SUBMITTED
+  IN_PROGRESS
+  COMPLETE
+  CANCELLED
+}
+
+enum LineStatus {
+  DRAFT
+  SUBMITTED
+  SENT_FOR_RFQ
+  YARD_STOCK
+  ON_ORDER
+  RECEIVED_AT_YARD
+  SHIPPED_PARTIAL
+  SHIPPED
+  RECEIVED_ON_SITE
+  RETURNED
+  CANCELLED
+}
+
+enum CustomColumnType {
+  TEXT
+  NUMBER
+  DATE
+  BOOLEAN
+  SELECT
+}
+
+enum PoSource {
+  MANUAL
+  EXTERNAL
+}
+
+enum InventorySource {
+  YARD_STOCK
+  PO_RECEIPT
+  RETURN
+  TRANSFER // arrived at a drop stop on a BOL
+  VENDOR // still at the vendor, waiting to be picked up (PO line on a BOL)
+}
+
+// Where a lot of material stands. In transit is shown by the BOL itself.
+enum InventoryStatus {
+  IN_STOCK // at a yard
+  STAGED // at an in-between location, still owes a final leg to its job
+  DELIVERED // at its final job
+}
+
+enum StopKind {
+  PICKUP
+  DROP
+}
+
+enum BolDirection {
+  OUTBOUND
+  RETURN
+}
+
+enum BolStatus {
+  DRAFT
+  ISSUED
+  PARTIALLY_RECEIVED
+  RECEIVED
+  CANCELLED
+}
+
+enum EntrySource {
+  MANUAL
+  AUTO
+  IMPORT
+}
+
+enum ContactType {
+  TRUCKING
+  VENDOR
+  BUSINESS
+  ANCILLARY
+  PERSON
+  SUBCONTRACTOR
+  RENTAL
+}
+
+enum StorageProviderKind {
+  LOCAL
+  SUPABASE
+  SHAREPOINT
+  GOOGLE_DRIVE
+}
+
+enum FileKind {
+  MEETING_PDF
+  MEETING_AUDIO
+  ORDER_XLSX
+  AP_INVOICE
+  AR_INVOICE
+  PO_PDF
+  PST_EXEMPTION
+  INSURANCE
+  COMPLIANCE
+  RENTAL_DOC
+  LOGO
+  BACKGROUND
+  PHOTO
+  BOL_PDF
+  ORDER_PDF
+  DELIVERY_DOC
+  MTR
+  CERT
+  SUBCONTRACT
+  PROJECT_DOC
+  EXPORT
+  OTHER
+}
+
+enum PoStatus {
+  DRAFT
+  PENDING_APPROVAL
+  ISSUED
+  CLOSED
+  CANCELLED
+}
+
+enum EmailMode {
+  AUTO
+  REVIEW
+}
+
+enum ApStatus {
+  RECEIVED // logged, not read / matched yet
+  NEEDS_REVIEW // something doesn't match the PO, or details are missing
+  IN_APPROVAL
+  APPROVED // ready to pay
+  PAID
+  REJECTED // in the Rejection Area
+  ON_HOLD // held for more information
+  REPLACED // a revised invoice or credit took its place
+}
+
+enum ApDocKind {
+  INVOICE
+  CREDIT
+}
+
+enum ArStatus {
+  DRAFT
+  SENT
+  PAID
+  VOID
+}
+
+enum ComplianceKind {
+  WCB // WorkSafeBC / WCB clearance letter
+  INSURANCE // certificate of insurance
+  OTHER
+}
+
+enum RentalRatePer {
+  HOUR
+  DAY
+  WEEK
+  MONTH
+}
+
+enum QcDocType {
+  MTR
+  CERT
+  OTHER
+}
+
+enum MailboxProvider {
+  GMAIL
+  MICROSOFT365
+}
+
+enum ConnectionStatus {
+  ACTIVE
+  ERROR
+  DISCONNECTED
+}
+
+enum EmailStatus {
+  QUEUED
+  SENT
+  FAILED
+  REVIEW // waiting for someone to check it before it goes
+  DISCARDED
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Platform & tenancy â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+model Organization {
+  id     String    @id @default(cuid())
+  name   String
+  slug   String    @unique
+  status OrgStatus @default(ACTIVE)
+
+  // Set only by the platform owner. When enabled, this org may use the platform's
+  // Claude key (if it has none of its own), limited by its own monthly CAD cap.
+  aiFallbackEnabled       Boolean  @default(false)
+  aiFallbackMonthlyCapCad Decimal? @db.Decimal(10, 2)
+
+  /// Organization-wide settings (health checks, …)
+  settings Json @default("{}")
+
+  /// Subscription (set by the platform owner, or by Stripe when it's connected)
+  plan                 String    @default("TRIAL") // TRIAL | STANDARD | PRO | CUSTOM | FREE
+  seats                Int       @default(10)
+  trialEndsAt          DateTime?
+  /// ACTIVE | PAST_DUE | CANCELLED | NONE
+  billingStatus        String    @default("NONE")
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
+  billingNotes         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companies          Company[]
+  users              User[]
+  sites              Site[]
+  invites            Invite[]
+  contacts           Contact[]
+  shippingLocations  ShippingLocation[]
+  files              FileAsset[]
+  storageConnections StorageConnection[]
+  aiConfig           AiConfig?
+}
+
+model Company {
+  id                    String   @id @default(cuid())
+  organizationId        String
+  code                  String // short code, unique within the organization
+  name                  String
+  themeColor            String   @default("#334155")
+  logoFileId            String?  @unique
+  loginBackgroundFileId String?  @unique
+  settings              Json     @default("{}")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  organization        Organization            @relation(fields: [organizationId], references: [id])
+  logoFile            FileAsset?              @relation("CompanyLogo", fields: [logoFileId], references: [id])
+  loginBackgroundFile FileAsset?              @relation("CompanyLoginBackground", fields: [loginBackgroundFileId], references: [id])
+  users               User[]
+  jobs                Site[]                  @relation("CompanyJobs")
+  yards               YardCompany[]
+  emailRecipients     CompanyEmailRecipient[]
+  costCodes           CostCode[]
+  customColumns       CustomColumn[]
+  vendors             Vendor[]
+  orderForms          OrderForm[]
+  purchaseOrders      PurchaseOrder[]
+  billsOfLading       BillOfLading[]
+  equipment           Equipment[]
+  invites             Invite[]
+  emailTemplates      EmailTemplate[]
+  customers           Customer[]
+  inventoryLots       InventoryLot[]          @relation("CompanyLots")
+
+  @@unique([organizationId, code])
+}
+
+model User {
+  id                  String    @id @default(cuid())
+  organizationId      String
+  companyId           String? // home company; null for org-wide admins
+  /// More business units (companies) this person works in, set by an admin
+  extraCompanyIds     String[]  @default([])
+  /// Authenticator app (TOTP): secret encrypted at rest; recovery codes stored hashed
+  mfaSecretEnc        String?
+  mfaPendingSecretEnc String?
+  mfaEnabledAt        DateTime?
+  mfaRecoveryHashes   String[]  @default([])
+  /// Last 30-second step used, so a code can't be used twice
+  mfaLastStep         Int?
+  /// Procurement: what they may buy for — ALL, JOBS or EQUIPMENT
+  procurementScope    String    @default("ALL")
+  /// Their own menu layout (within what the admin allows)
+  navLayout           Json?
+  email               String    @unique // stored lower-case
+  name                String
+  initials            String
+  phone               String?
+  roles               Role[]
+  isPlatformOwner     Boolean   @default(false)
+  active              Boolean   @default(true)
+  lastLoginAt         DateTime?
+  deletedAt           DateTime? // in-app account deletion: personal data anonymized
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  organization    Organization         @relation(fields: [organizationId], references: [id])
+  company         Company?             @relation(fields: [companyId], references: [id])
+  identities      AuthIdentity[]
+  sessions        Session[]
+  memberships     SiteMembership[]
+  devices         DeviceRegistration[]
+  notifications   Notification[]
+  mailbox         MailboxConnection?
+  invitesSent     Invite[]             @relation("InviteInvitedBy")
+  sitePosts       SitePost[]
+  ordersCreated   OrderForm[]          @relation("OrderCreatedBy")
+  ordersSubmitted OrderForm[]          @relation("OrderSubmittedBy")
+  yardReceipts    YardReceipt[]
+  siteReceipts    SiteReceipt[]
+  bolsCreated     BillOfLading[]
+  equipmentMoves  EquipmentMovement[]
+  managedSites    Site[]               @relation("ProjectManager")
+  notifyRules     SiteNotifyRule[]
+}
+
+model AuthIdentity {
+  id              String       @id @default(cuid())
+  userId          String
+  provider        AuthProvider
+  providerSubject String // email for EMAIL, Google "sub" for GOOGLE
+  createdAt       DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerSubject])
+}
+
+model LoginCode {
+  id         String    @id @default(cuid())
+  email      String
+  codeHash   String
+  expiresAt  DateTime
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  ip         String?
+  createdAt  DateTime  @default(now())
+
+  @@index([email, createdAt])
+}
+
+model Session {
+  id            String    @id @default(cuid())
+  userId        String
+  tokenHash     String    @unique
+  clientApp     String? // web | pc | ios | android
+  clientVersion String?
+  userAgent     String?
+  createdAt     DateTime  @default(now())
+  lastUsedAt    DateTime  @default(now())
+  expiresAt     DateTime
+  revokedAt     DateTime?
+  /// Passed the authenticator-app check on this session
+  mfaVerifiedAt DateTime?
+  mfaFailures   Int       @default(0)
+  ip            String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Invite {
+  id             String    @id @default(cuid())
+  organizationId String
+  companyId      String?
+  email          String // lower-case
+  name           String?
+  roles          Role[]
+  siteIds        String[]
+  invitedById    String?
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  revokedAt      DateTime?
+  createdAt      DateTime  @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  company      Company?     @relation(fields: [companyId], references: [id])
+  invitedBy    User?        @relation("InviteInvitedBy", fields: [invitedById], references: [id])
+
+  @@index([email])
+}
+
+model DeviceRegistration {
+  id         String   @id @default(cuid())
+  userId     String
+  platform   String
+  pushToken  String
+  appVersion String?
+  lastSeenAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([platform, pushToken])
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Jobs & yards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+model Site {
+  id                 String    @id @default(cuid())
+  organizationId     String
+  companyId          String? // required for JOB, null for YARD (yards belong to the org)
+  type               SiteType
+  jobNumber          String // free text: "2249", "26-BC249"; yard code for yards
+  name               String
+  active             Boolean   @default(true)
+  address            String?
+  city               String?
+  province           String?
+  postalCode         String?
+  country            String    @default("CA")
+  lat                Float?
+  lng                Float?
+  notes              String?
+  /// Jobs / projects only
+  clientName         String?
+  startDate          DateTime? @db.Date
+  projectManagerId   String?
+  pstExempt          Boolean   @default(false)
+  /// When jobs want the same equipment, lower goes first (pre-job planning)
+  equipmentPriority  Int       @default(100)
+  pstExemptNumber    String?
+  pstExemptionFileId String?   @unique
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  organization     Organization          @relation(fields: [organizationId], references: [id])
+  company          Company?              @relation("CompanyJobs", fields: [companyId], references: [id])
+  projectManager   User?                 @relation("ProjectManager", fields: [projectManagerId], references: [id])
+  pstExemptionFile FileAsset?            @relation("SitePstForm", fields: [pstExemptionFileId], references: [id])
+  rentals          Rental[]
+  purchaseOrders   PurchaseOrder[]       @relation("PoJob")
+  yardCompanies    YardCompany[]
+  members          SiteMembership[]
+  emailRoutes      SiteEmailRoute[]
+  contacts         SiteContact[]
+  costCodes        CostCode[]
+  shippingLocation ShippingLocation?
+  posts            SitePost[]
+  orderForms       OrderForm[]
+  orderLines       OrderLine[]
+  siteInventory    SiteInventoryItem[]
+  yardReceipts     YardReceipt[]
+  billsOfLading    BillOfLading[]
+  siteReceipts     SiteReceipt[]
+  finalLots        InventoryLot[]        @relation("LotFinalSite")
+  qcDocuments      QCDocument[]
+  subcontractDocs  SubcontractDocument[]
+  incomingPos      PurchaseOrder[]       @relation("PoDeliverTo")
+  notifyRules      SiteNotifyRule[]
+  /// Projects: holdback on subcontractor invoices (default % for this job; per-sub overrides below)
+  subHoldbackPct   Decimal?              @db.Decimal(5, 2)
+  /// Projects: holdback on our own invoices to the customer (off unless set)
+  arHoldbackPct    Decimal?              @db.Decimal(5, 2)
+  customerId       String?
+  customer         Customer?             @relation(fields: [customerId], references: [id])
+  subHoldbacks     SubHoldback[]
+  apInvoices       ApInvoice[]
+  arInvoices       ArInvoice[]
+  budgets          JobBudget[]
+  bolLinesFor      BOLLine[]             @relation("BolLineForSite")
+
+  @@unique([companyId, jobNumber])
+  @@index([organizationId, type])
+}
+
+model YardCompany {
+  yardId    String
+  companyId String
+
+  yard    Site    @relation(fields: [yardId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@id([yardId, companyId])
+}
+
+model SiteMembership {
+  siteId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([siteId, userId])
+}
+
+model CompanyEmailRecipient {
+  id        String             @id @default(cuid())
+  companyId String
+  kind      EmailRecipientKind
+  email     String
+  name      String?
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, kind, email])
+}
+
+model SiteEmailRoute {
+  id     String             @id @default(cuid())
+  siteId String
+  kind   EmailRecipientKind
+  email  String
+  name   String?
+
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([siteId, kind, email])
+}
+
+model SiteContact {
+  siteId     String
+  contactId  String
+  roleOnSite String?
+
+  site    Site    @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@id([siteId, contactId])
+}
+
+model CostCode {
+  id          String  @id @default(cuid())
+  companyId   String
+  siteId      String? // null = company-wide
+  code        String
+  description String?
+  active      Boolean @default(true)
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  site    Site?   @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, siteId, code])
+}
+
+// Atomic sequence counters. Keys: "list:<jobId>", "order:<companyId>", "bol:<companyId>"
+model Counter {
+  key   String @id
+  value Int
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Orders â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+model OrderForm {
+  id                    String      @id @default(cuid())
+  organizationId        String
+  companyId             String
+  siteId                String
+  listNo                Int? // per job, assigned on submit â†’ "JOB#2249 LIST#1"
+  companySeq            Int? // hidden running number per company (search, Sage Intacct)
+  status                OrderStatus @default(DRAFT)
+  createdById           String
+  submittedById         String?
+  submittedAt           DateTime?
+  notes                 String?
+  // While DRAFT, rows are kept as typed (may be incomplete). On submit they are
+  // checked and become OrderLines; this is then cleared.
+  draftRows             Json?
+  /// Set when this list was made from lines typed straight onto a PO
+  sourcePurchaseOrderId String?     @unique
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  company             Company        @relation(fields: [companyId], references: [id])
+  site                Site           @relation(fields: [siteId], references: [id])
+  createdBy           User           @relation("OrderCreatedBy", fields: [createdById], references: [id])
+  submittedBy         User?          @relation("OrderSubmittedBy", fields: [submittedById], references: [id])
+  lines               OrderLine[]
+  sourcePurchaseOrder PurchaseOrder? @relation("PoOrderForm", fields: [sourcePurchaseOrderId], references: [id])
+  yardReceipts        YardReceipt[]
+
+  @@unique([siteId, listNo])
+  @@unique([companyId, companySeq])
+}
+
+model OrderLine {
+  id                String     @id @default(cuid())
+  organizationId    String
+  companyId         String
+  siteId            String
+  orderFormId       String
+  lineNo            Int // shown as L1, L2â€¦
+  description       String
+  quantity          Decimal    @db.Decimal(14, 3)
+  uom               String
+  costCode          String? // checked against the company/job cost code list when one exists
+  orderedByInitials String
+  requiredOnSite    DateTime?  @db.Date
+  status            LineStatus @default(DRAFT)
+  statusChangedAt   DateTime?
+  yardQtyAvailable  Decimal?   @db.Decimal(14, 3)
+  yardCheckedById   String?
+  yardCheckedAt     DateTime?
+  unitCost          Decimal?   @db.Decimal(14, 4) // extended = quantity Ã— unitCost (computed)
+  cancelledAt       DateTime?
+  rfqSentAt         DateTime? // procurement sent this line out for quotes
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  orderForm        OrderForm           @relation(fields: [orderFormId], references: [id], onDelete: Cascade)
+  site             Site                @relation(fields: [siteId], references: [id])
+  customValues     CustomValue[]
+  poLines          PurchaseOrderLine[]
+  yardReceiptLines YardReceiptLine[]
+  inventoryLots    InventoryLot[]
+  bolLines         BOLLine[]
+  siteInventory    SiteInventoryItem?
+  qcDocuments      QCDocumentLine[]
+  /// Optional, per unit (for the load builder): kg and metres
+  unitWeightKg     Decimal?            @db.Decimal(12, 3)
+  lengthM          Decimal?            @db.Decimal(8, 3)
+  widthM           Decimal?            @db.Decimal(8, 3)
+  heightM          Decimal?            @db.Decimal(8, 3)
+  /// Pieces can be stacked on each other
+  stackable        Boolean             @default(true)
+  /// Added from a PO (off-list buy) and why
+  addedFromPoId    String?
+  offListReason    String?
+
+  @@unique([orderFormId, lineNo])
+  @@index([siteId, status])
+}
+
+model CustomColumn {
+  id             String           @id @default(cuid())
+  companyId      String
+  name           String
+  dataType       CustomColumnType @default(TEXT)
+  options        Json?
+  sharedWithSite Boolean          @default(false)
+  sortOrder      Int              @default(0)
+  createdById    String?
+  createdAt      DateTime         @default(now())
+
+  company Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  values  CustomValue[]
+}
+
+model CustomValue {
+  columnId    String
+  orderLineId String
+  value       Json
+  updatedAt   DateTime @updatedAt
+
+  column    CustomColumn @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  orderLine OrderLine    @relation(fields: [orderLineId], references: [id], onDelete: Cascade)
+
+  @@id([columnId, orderLineId])
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Procurement â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+model Vendor {
+  id         String  @id @default(cuid())
+  companyId  String
+  name       String
+  contactId  String?
+  externalId String? // e.g. accounting-system vendor ID
+
+  company        Company         @relation(fields: [companyId], references: [id])
+  contact        Contact?        @relation(fields: [contactId], references: [id])
+  purchaseOrders PurchaseOrder[]
+  qcDocuments    QCDocument[]
+  apInvoices     ApInvoice[]
+
+  @@unique([companyId, name])
+}
+
+model PurchaseOrder {
+  id               String    @id @default(cuid())
+  organizationId   String
+  companyId        String
+  poNumber         String
+  vendorId         String
+  source           PoSource  @default(MANUAL)
+  externalId       String? // ID in the external PO / accounting system (future)
+  deliverToYardId  String? // yard the vendor delivers to (drives the incoming list)
+  notes            String?
+  /// What it's for: a job / project, or a piece of equipment
+  siteId           String?
+  equipmentId      String?
+  status           PoStatus  @default(ISSUED)
+  orderedDate      DateTime? @db.Date
+  expectedDate     DateTime? @db.Date
+  shipToText       String?
+  /// Tax worked out when the PO is issued (from the job's province / exemption)
+  pstExempt        Boolean   @default(false)
+  taxProvince      String?
+  gstRate          Decimal?  @db.Decimal(6, 4)
+  pstRate          Decimal?  @db.Decimal(6, 4)
+  hstRate          Decimal?  @db.Decimal(6, 4)
+  emailVendor      Boolean   @default(false)
+  approvalNote     String?
+  approvedById     String?
+  approvedAt       DateTime?
+  issuedById       String?
+  issuedAt         DateTime?
+  vendorSentAt     DateTime?
+  followUpQueuedAt DateTime?
+  arrivalPromptAt  DateTime?
+  cancelledAt      DateTime?
+  createdById      String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  company           Company             @relation(fields: [companyId], references: [id])
+  vendor            Vendor              @relation(fields: [vendorId], references: [id])
+  deliverTo         Site?               @relation("PoDeliverTo", fields: [deliverToYardId], references: [id])
+  lines             PurchaseOrderLine[]
+  site              Site?               @relation("PoJob", fields: [siteId], references: [id])
+  equipment         Equipment?          @relation(fields: [equipmentId], references: [id])
+  orderForm         OrderForm?          @relation("PoOrderForm")
+  yardReceipts      YardReceipt[]
+  qcDocuments       QCDocument[]
+  scans             DocumentScan[]
+  overdueNotifiedAt DateTime?
+  /// The ETA the 1 PM chase-up last fired for (a new ETA re-arms it)
+  chasedForDate     DateTime?
+  /// Edits after the PO was committed (Rev 1, Rev 2…)
+  revision          Int                 @default(0)
+  completedAt       DateTime?
+  apInvoices        ApInvoice[]
+  /// Carrier it ships with (from the Ship via list) and where it goes (a ship-to location)
+  shipViaId         String?
+  shipToLocationId  String?
+  /// Who at our company it's for (two site contacts) and who at the vendor it was placed with
+  siteContact1Id    String?
+  siteContact2Id    String?
+  supplierContactId String?
+  /// Vendor ships straight to the job: a BOL is made (with the ETA) and the site is told
+  shipDirect        Boolean             @default(false)
+  directBolId       String?
+
+  @@unique([companyId, poNumber])
+}
+
+// Links a PO to an order line (L#). One L# may span several POs.
+model PurchaseOrderLine {
+  id              String    @id @default(cuid())
+  purchaseOrderId String
+  orderLineId     String?
+  lineNo          Int?
+  description     String?
+  uom             String?
+  qty             Decimal   @db.Decimal(14, 3)
+  unitCost        Decimal?  @db.Decimal(14, 4)
+  vendorEta       DateTime? @db.Date
+  externalLineId  String?
+  createdAt       DateTime  @default(now())
+
+  purchaseOrder    PurchaseOrder     @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  orderLine        OrderLine?        @relation(fields: [orderLineId], references: [id])
+  yardReceiptLines YardReceiptLine[]
+  bolLines         BOLLine[]
+  /// For job budgets (order-list lines use their own cost code)
+  costCode         String?
+  apLines          ApInvoiceLine[]
+  /// Bought off-list: why (shown on the order list it joins)
+  offListReason    String?
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Yard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+model YardReceipt {
+  id              String   @id @default(cuid())
+  organizationId  String
+  companyId       String
+  yardId          String
+  purchaseOrderId String?
+  orderFormId     String?
+  returnBolId     String? // set when the yard receives a return BOL
+  receivedById    String
+  receivedAt      DateTime @default(now())
+  notes           String?
+  /// Receiving report PDF (made on receipt; goes with the vendor invoice for approval)
+  reportFileId    String?
+
+  yard          Site              @relation(fields: [yardId], references: [id])
+  purchaseOrder PurchaseOrder?    @relation(fields: [purchaseOrderId], references: [id])
+  orderForm     OrderForm?        @relation(fields: [orderFormId], references: [id])
+  returnBol     BillOfLading?     @relation("ReturnReceipts", fields: [returnBolId], references: [id])
+  receivedBy    User              @relation(fields: [receivedById], references: [id])
+  lines         YardReceiptLine[]
+  photos        FileAsset[]
+  scans         DocumentScan[]
+}
+
+model YardReceiptLine {
+  id                  String  @id @default(cuid())
+  yardReceiptId       String
+  orderLineId         String?
+  purchaseOrderLineId String?
+  bolLineId           String? // the return BOL line being received
+  qtyExpected         Decimal @db.Decimal(14, 3)
+  qtyReceived         Decimal @db.Decimal(14, 3)
+  problem             Boolean @default(false)
+  problemNote         String?
+
+  yardReceipt  YardReceipt        @relation(fields: [yardReceiptId], references: [id], onDelete: Cascade)
+  orderLine    OrderLine?         @relation(fields: [orderLineId], references: [id])
+  poLine       PurchaseOrderLine? @relation(fields: [purchaseOrderLineId], references: [id])
+  bolLine      BOLLine?           @relation(fields: [bolLineId], references: [id])
+  inventoryLot InventoryLot?
+}
+
+// A lot of shippable stock at a yard, always tied to the order line it serves.
+// A quantity of one order line's material sitting at one location. Lots are
+// drawn down by BOLs; each drop creates a new lot at the drop location.
+model InventoryLot {
+  id                  String          @id @default(cuid())
+  organizationId      String
+  companyId           String // material keeps its company, even in a shared yard
+  orderLineId         String?
+  finalSiteId         String? // the job it's ultimately for (null for equipment stock)
+  /// Equipment stock (oil, filters, parts bought on an equipment PO): the unit it's for
+  equipmentId         String?
+  locationId          String
+  status              InventoryStatus @default(IN_STOCK)
+  source              InventorySource
+  yardReceiptLineId   String?         @unique
+  siteReceiptLineId   String?         @unique
+  parentLotId         String?
+  /// The PO line it came from when it was set up at the vendor (VENDOR lots)
+  purchaseOrderLineId String?
+  description         String
+  uom                 String
+  qtyIn               Decimal         @db.Decimal(14, 3)
+  qtyAvailable        Decimal         @db.Decimal(14, 3)
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  orderLine       OrderLine?       @relation(fields: [orderLineId], references: [id])
+  company         Company          @relation("CompanyLots", fields: [companyId], references: [id])
+  equipment       Equipment?       @relation("EquipmentStock", fields: [equipmentId], references: [id])
+  finalSite       Site?            @relation("LotFinalSite", fields: [finalSiteId], references: [id])
+  location        ShippingLocation @relation(fields: [locationId], references: [id])
+  yardReceiptLine YardReceiptLine? @relation(fields: [yardReceiptLineId], references: [id])
+  siteReceiptLine SiteReceiptLine? @relation(fields: [siteReceiptLineId], references: [id])
+  parent          InventoryLot?    @relation("LotParent", fields: [parentLotId], references: [id])
+  children        InventoryLot[]   @relation("LotParent")
+  bolLines        BOLLine[]
+
+  @@index([locationId, companyId])
+  @@index([orderLineId])
+  @@map("YardInventoryItem")
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Shipping â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+// direction RETURN = a return BOL created by a site
+model BillOfLading {
+  id               String       @id @default(cuid())
+  organizationId   String
+  companyId        String
+  bolNumber        Int? // per company, assigned when issued (drafts have none)
+  direction        BolDirection @default(OUTBOUND)
+  status           BolStatus    @default(DRAFT)
+  siteId           String? // main job it serves (returns: the job it comes from)
+  carrierContactId String?
+  driverName       String?
+  truckUnit        String?
+  scheduledDate    DateTime?    @db.Date
+  pdfFileId        String?      @unique
+  notes            String?
+  createdById      String
+  issuedAt         DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  company        Company             @relation(fields: [companyId], references: [id])
+  site           Site?               @relation(fields: [siteId], references: [id])
+  stops          BolStop[]
+  carrier        Contact?            @relation(fields: [carrierContactId], references: [id])
+  pdfFile        FileAsset?          @relation("BolPdf", fields: [pdfFileId], references: [id])
+  createdBy      User                @relation(fields: [createdById], references: [id])
+  lines          BOLLine[]
+  siteReceipts   SiteReceipt[]
+  returnReceipts YardReceipt[]       @relation("ReturnReceipts")
+  equipmentMoves EquipmentMovement[]
+  /// The truck has left (pressed by the shipper); sends the "shipped" notices
+  shippedAt      DateTime?
+  shippedById    String?
+  /// The trailer this load goes on (load builder / capacity check)
+  trailerId      String?
+  /// Load board: EMERGENCY (red) | HIGH | NORMAL | ANYTIME (green)
+  priority       String              @default("NORMAL")
+  /// A short name for a posted load ("Excavator move", "Rebar top-up")
+  title          String?
+  trailer        Trailer?            @relation(fields: [trailerId], references: [id])
+
+  @@unique([companyId, bolNumber])
+}
+
+// Pickup 1, 2, 3â€¦ and Delivery 1, 2, 3â€¦ for milk runs.
+model BolStop {
+  id             String    @id @default(cuid())
+  bolId          String
+  seq            Int // order of the stop on the route
+  kind           StopKind
+  locationId     String
+  notes          String?
+  /// When the truck is planned to be at this stop (pickup or delivery date + optional time HH:MM)
+  plannedDate    DateTime? @db.Date
+  plannedTime    String?
+  /// Day-before delivery reminder sent (cleared when the date changes)
+  reminderSentAt DateTime?
+  completedAt    DateTime?
+
+  bol          BillOfLading     @relation(fields: [bolId], references: [id], onDelete: Cascade)
+  location     ShippingLocation @relation(fields: [locationId], references: [id])
+  pickupLines  BOLLine[]        @relation("LinePickup")
+  dropLines    BOLLine[]        @relation("LineDrop")
+  siteReceipts SiteReceipt[]
+
+  @@unique([bolId, seq])
+  @@index([plannedDate])
+}
+
+model BOLLine {
+  id                  String  @id @default(cuid())
+  bolId               String
+  lineNo              Int
+  orderLineId         String? // L#, order #, PO # traceback (null for typed-in items)
+  purchaseOrderLineId String?
+  sourceLotId         String? // the lot it was picked from (null for typed-in items)
+  /// Typed in by hand (not from inventory): shipped and received, no stock moves
+  manual              Boolean @default(false)
+  /// The job a typed-in item is for (groups the BOL by job)
+  forSiteId           String?
+  pickupStopId        String
+  dropStopId          String
+  description         String
+  uom                 String
+  qty                 Decimal @db.Decimal(14, 3)
+
+  bol              BillOfLading       @relation(fields: [bolId], references: [id], onDelete: Cascade)
+  orderLine        OrderLine?         @relation(fields: [orderLineId], references: [id])
+  poLine           PurchaseOrderLine? @relation(fields: [purchaseOrderLineId], references: [id])
+  sourceLot        InventoryLot?      @relation(fields: [sourceLotId], references: [id])
+  pickupStop       BolStop            @relation("LinePickup", fields: [pickupStopId], references: [id])
+  dropStop         BolStop            @relation("LineDrop", fields: [dropStopId], references: [id])
+  forSite          Site?              @relation("BolLineForSite", fields: [forSiteId], references: [id])
+  siteReceiptLines SiteReceiptLine[]
+  yardReceiptLines YardReceiptLine[]
+
+  @@unique([bolId, lineNo])
+}
+
+model SiteReceipt {
+  id             String   @id @default(cuid())
+  organizationId String
+  bolId          String
+  stopId         String
+  siteId         String? // set when the drop location is a job or yard
+  receivedById   String
+  receivedAt     DateTime @default(now())
+  notes          String?
+  /// Receiving report PDF
+  reportFileId   String?
+
+  bol        BillOfLading      @relation(fields: [bolId], references: [id])
+  stop       BolStop           @relation(fields: [stopId], references: [id])
+  site       Site?             @relation(fields: [siteId], references: [id])
+  receivedBy User              @relation(fields: [receivedById], references: [id])
+  lines      SiteReceiptLine[]
+  photos     FileAsset[]
+}
+
+model SiteReceiptLine {
+  id            String  @id @default(cuid())
+  siteReceiptId String
+  bolLineId     String
+  qtyReceived   Decimal @db.Decimal(14, 3)
+  qtyShort      Decimal @default(0) @db.Decimal(14, 3)
+  damaged       Boolean @default(false)
+  note          String?
+
+  siteReceipt SiteReceipt   @relation(fields: [siteReceiptId], references: [id], onDelete: Cascade)
+  bolLine     BOLLine       @relation(fields: [bolLineId], references: [id])
+  lot         InventoryLot?
+}
+
+// One row per ordered line; totals are recalculated from source records by core/domain.
+model SiteInventoryItem {
+  id          String   @id @default(cuid())
+  siteId      String
+  orderLineId String   @unique
+  qtyOrdered  Decimal  @db.Decimal(14, 3)
+  qtyShipped  Decimal  @default(0) @db.Decimal(14, 3)
+  qtyReceived Decimal  @default(0) @db.Decimal(14, 3)
+  qtyReturned Decimal  @default(0) @db.Decimal(14, 3)
+  updatedAt   DateTime @updatedAt
+
+  site      Site      @relation(fields: [siteId], references: [id])
+  orderLine OrderLine @relation(fields: [orderLineId], references: [id], onDelete: Cascade)
+}
+
+// Organization-wide library (shared across companies and yards)
+model ShippingLocation {
+  id             String      @id @default(cuid())
+  organizationId String
+  companyId      String? // optional tag
+  siteId         String?     @unique // set when this location is a job or yard
+  businessName   String
+  address        String?
+  city           String?
+  province       String?
+  postalCode     String?
+  phone          String?
+  cell           String?
+  lat            Float?
+  lng            Float?
+  notes          String?
+  source         EntrySource @default(MANUAL)
+  /// Set when this is a vendor's pick-up location (made from a PO)
+  vendorId       String?     @unique
+  /// An extra ship-to for this job / project (set on the job page)
+  forSiteId      String?
+  active         Boolean     @default(true)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  organization Organization        @relation(fields: [organizationId], references: [id])
+  site         Site?               @relation(fields: [siteId], references: [id])
+  lots         InventoryLot[]
+  stops        BolStop[]
+  equipmentAt  Equipment[]
+  movesFrom    EquipmentMovement[] @relation("MoveFrom")
+  movesTo      EquipmentMovement[] @relation("MoveTo")
+}
+
+// Organization-wide contacts (trucking, businesses, ancillary, people)
+model Contact {
+  id             String      @id @default(cuid())
+  organizationId String
+  companyId      String? // optional tag
+  type           ContactType
+  name           String
+  businessName   String?
+  phone          String?
+  cell           String?
+  email          String?
+  notes          String?
+  source         EntrySource @default(MANUAL)
+  active         Boolean     @default(true)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  organization Organization          @relation(fields: [organizationId], references: [id])
+  sites        SiteContact[]
+  vendors      Vendor[]
+  bolsCarried  BillOfLading[]
+  subcontracts SubcontractDocument[]
+  rentals      Rental[]
+  compliance   ComplianceRecord[]
+  /// Send invoice rejections to this person at the vendor
+  isApContact  Boolean               @default(false)
+  subHoldbacks SubHoldback[]
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Equipment â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+model Equipment {
+  id                  String   @id @default(cuid())
+  organizationId      String
+  companyId           String
+  unitNumber          String
+  description         String
+  make                String?
+  model               String?
+  year                Int?
+  serial              String?
+  category            String?
+  currentLocationId   String?
+  currentLocationText String?
+  currentLat          Float?
+  currentLng          Float?
+  importedRaw         Json?
+  notes               String?
+  pstExempt           Boolean  @default(false)
+  pstExemptNumber     String?
+  pstExemptionFileId  String?  @unique
+  active              Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  company          Company             @relation(fields: [companyId], references: [id])
+  currentLocation  ShippingLocation?   @relation(fields: [currentLocationId], references: [id])
+  movements        EquipmentMovement[]
+  purchaseOrders   PurchaseOrder[]
+  pstExemptionFile FileAsset?          @relation("EquipmentPstForm", fields: [pstExemptionFileId], references: [id])
+  stockLots        InventoryLot[]      @relation("EquipmentStock")
+
+  @@unique([companyId, unitNumber])
+}
+
+model EquipmentMovement {
+  id             String   @id @default(cuid())
+  equipmentId    String
+  fromLocationId String?
+  fromText       String?
+  toLocationId   String?
+  toText         String?
+  movedAt        DateTime
+  recordedById   String
+  bolId          String?
+  notes          String?
+  createdAt      DateTime @default(now())
+
+  equipment  Equipment         @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  from       ShippingLocation? @relation("MoveFrom", fields: [fromLocationId], references: [id])
+  to         ShippingLocation? @relation("MoveTo", fields: [toLocationId], references: [id])
+  recordedBy User              @relation(fields: [recordedById], references: [id])
+  bol        BillOfLading?     @relation(fields: [bolId], references: [id])
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Files & documents â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+// Provider-neutral file record. The bytes live wherever `provider` says.
+model FileAsset {
+  id             String              @id @default(cuid())
+  organizationId String
+  companyId      String?
+  provider       StorageProviderKind
+  connectionId   String?
+  storageKey     String // provider-specific key/path
+  externalId     String? // provider's own file ID, if any
+  fileName       String
+  mimeType       String
+  sizeBytes      Int
+  checksum       String?
+  kind           FileKind            @default(OTHER)
+  uploadedById   String?
+  yardReceiptId  String?
+  siteReceiptId  String?
+  documentScanId String?
+  rentalId       String?
+  createdAt      DateTime            @default(now())
+  deletedAt      DateTime?
+
+  organization        Organization         @relation(fields: [organizationId], references: [id])
+  connection          StorageConnection?   @relation(fields: [connectionId], references: [id])
+  yardReceipt         YardReceipt?         @relation(fields: [yardReceiptId], references: [id])
+  siteReceipt         SiteReceipt?         @relation(fields: [siteReceiptId], references: [id])
+  documentScan        DocumentScan?        @relation(fields: [documentScanId], references: [id])
+  companyLogo         Company?             @relation("CompanyLogo")
+  companyBackground   Company?             @relation("CompanyLoginBackground")
+  bolPdf              BillOfLading?        @relation("BolPdf")
+  qcDocument          QCDocument?
+  subcontractDocument SubcontractDocument?
+  sitePstForm         Site?                @relation("SitePstForm")
+  equipmentPstForm    Equipment?           @relation("EquipmentPstForm")
+  rental              Rental?              @relation(fields: [rentalId], references: [id])
+  complianceRecord    ComplianceRecord?
+  meetingId           String?
+  /// Backup document for a customer invoice (tickets, timesheets, receiving reports)
+  arInvoiceId         String?
+  meeting             Meeting?             @relation("MeetingAudio", fields: [meetingId], references: [id])
+}
+
+model QCDocument {
+  id              String    @id @default(cuid())
+  organizationId  String
+  companyId       String
+  siteId          String?
+  type            QcDocType
+  title           String
+  heatNumber      String?
+  fileId          String    @unique
+  purchaseOrderId String?
+  vendorId        String?
+  uploadedById    String?
+  createdAt       DateTime  @default(now())
+
+  site          Site?            @relation(fields: [siteId], references: [id])
+  file          FileAsset        @relation(fields: [fileId], references: [id])
+  purchaseOrder PurchaseOrder?   @relation(fields: [purchaseOrderId], references: [id])
+  vendor        Vendor?          @relation(fields: [vendorId], references: [id])
+  lines         QCDocumentLine[]
+}
+
+model QCDocumentLine {
+  qcDocumentId String
+  orderLineId  String
+
+  qcDocument QCDocument @relation(fields: [qcDocumentId], references: [id], onDelete: Cascade)
+  orderLine  OrderLine  @relation(fields: [orderLineId], references: [id], onDelete: Cascade)
+
+  @@id([qcDocumentId, orderLineId])
+}
+
+model SubcontractDocument {
+  id             String    @id @default(cuid())
+  organizationId String
+  companyId      String
+  siteId         String
+  subcontractor  String
+  contactId      String?
+  docType        String
+  title          String
+  fileId         String    @unique
+  effectiveDate  DateTime? @db.Date
+  uploadedById   String?
+  createdAt      DateTime  @default(now())
+
+  site    Site      @relation(fields: [siteId], references: [id])
+  contact Contact?  @relation(fields: [contactId], references: [id])
+  file    FileAsset @relation(fields: [fileId], references: [id])
+}
+
+model StorageConnection {
+  id                   String              @id @default(cuid())
+  organizationId       String
+  companyId            String? // null = organization default
+  provider             StorageProviderKind
+  displayName          String
+  config               Json                @default("{}")
+  credentialsEncrypted String?
+  isDefault            Boolean             @default(false)
+  status               ConnectionStatus    @default(ACTIVE)
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  files        FileAsset[]
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Email â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+// Optional per-user "Connect my email" (built later)
+model MailboxConnection {
+  id                   String           @id @default(cuid())
+  userId               String           @unique
+  provider             MailboxProvider
+  emailAddress         String
+  credentialsEncrypted String
+  status               ConnectionStatus @default(ACTIVE)
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Every email SupplyLine sends, for retries and audit
+model EmailOutbox {
+  id                String      @id @default(cuid())
+  organizationId    String?
+  provider          String?
+  fromName          String
+  replyTo           String?
+  to                String[]
+  cc                String[]
+  subject           String
+  bodyText          String?
+  bodyHtml          String?
+  attachments       Json?
+  status            EmailStatus @default(QUEUED)
+  providerMessageId String?
+  error             String?
+  attempts          Int         @default(0)
+  relatedType       String?
+  relatedId         String?
+  companyId         String?
+  templateKey       String?
+  /// Files attached when it is finally sent (kept so a reviewed email still has them)
+  attachmentFileIds String[]
+  reviewedById      String?
+  createdAt         DateTime    @default(now())
+  sentAt            DateTime?
+
+  @@index([status, createdAt])
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Feed, notifications, audit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+model SitePost {
+  id        String   @id @default(cuid())
+  siteId    String
+  userId    String
+  body      String
+  createdAt DateTime @default(now())
+
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  body      String
+  link      String?
+  readAt    DateTime?
+  /// Sent as a push notification (or nothing to send it to)
+  pushedAt  DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+}
+
+model AuditLog {
+  id             BigInt   @id @default(autoincrement())
+  organizationId String?
+  userId         String?
+  action         String
+  entityType     String
+  entityId       String
+  before         Json?
+  after          Json?
+  clientApp      String? // e.g. "ios 1.2.0"
+  at             DateTime @default(now())
+
+  @@index([organizationId, entityType, entityId])
+  @@index([organizationId, at])
+}
+
+// Recycle bin: deleted records are kept here (with everything that belonged
+// to them) so they can be restored. The audit log keeps the permanent history.
+model DeletedRecord {
+  id             String    @id @default(cuid())
+  organizationId String
+  entityType     String // ORDER_DRAFT, PO_LINE, CUSTOM_COLUMN, CONTACT, LOCATION, BOL_DRAFT â€¦
+  entityId       String
+  label          String
+  snapshot       Json
+  deletedById    String?
+  deletedAt      DateTime  @default(now())
+  restoredAt     DateTime?
+  restoredById   String?
+
+  @@index([organizationId, deletedAt])
+}
+
+model PlatformSetting {
+  key            String   @id
+  value          Json?
+  valueEncrypted String?
+  updatedAt      DateTime @updatedAt
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ AI (Phase 7) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+model AiConfig {
+  id              String   @id @default(cuid())
+  organizationId  String   @unique
+  enabled         Boolean  @default(false)
+  apiKeyEncrypted String? // the organization's own Claude key
+  model           String?
+  sttProvider     String?
+  sttKeyEncrypted String?
+  monthlyCapCad   Decimal? @db.Decimal(10, 2)
+  alertedMonth80  String? // "2026-10" once the 80% alert is sent
+  alertedMonth100 String?
+  updatedAt       DateTime @updatedAt
+
+  organization       Organization @relation(fields: [organizationId], references: [id])
+  /// CAD per USD, and the model's USD price per million tokens (check Anthropic's pricing page)
+  usdToCad           Decimal      @default(1.37) @db.Decimal(6, 4)
+  priceInputUsdPerM  Decimal      @default(3) @db.Decimal(10, 4)
+  priceOutputUsdPerM Decimal      @default(15) @db.Decimal(10, 4)
+}
+
+model AiToggle {
+  id             String  @id @default(cuid())
+  organizationId String
+  companyId      String?
+  role           Role?
+  screen         String?
+  enabled        Boolean
+}
+
+model AiRequestLog {
+  id              String   @id @default(cuid())
+  organizationId  String
+  companyId       String?
+  siteId          String?
+  userId          String
+  screen          String
+  kind            String // VOICE | SCAN
+  model           String
+  usedPlatformKey Boolean  @default(false)
+  transcript      String?
+  fieldsFilled    Json?
+  inputTokens     Int
+  outputTokens    Int
+  costCad         Decimal  @db.Decimal(10, 4)
+  createdAt       DateTime @default(now())
+  summary         String?
+  error           String?
+
+  @@index([organizationId, createdAt])
+}
+
+model DocumentScan {
+  id              String   @id @default(cuid())
+  organizationId  String
+  yardReceiptId   String?
+  purchaseOrderId String?
+  extracted       Json
+  status          String
+  createdAt       DateTime @default(now())
+
+  yardReceipt   YardReceipt?   @relation(fields: [yardReceiptId], references: [id])
+  purchaseOrder PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+  files         FileAsset[]
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Exports (Phase 6) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+model ExportMapping {
+  id             String    @id @default(cuid())
+  organizationId String
+  companyId      String?
+  target         String // e.g. "sage-intacct"
+  name           String
+  mapping        Json
+  updatedAt      DateTime  @updatedAt
+  /// ORDER_LINES | PO_LINES | AP_INVOICES | AR_INVOICES
+  dataset        String    @default("ORDER_LINES")
+  format         String    @default("xlsx") // xlsx | csv
+  dateFormat     String    @default("YYYY-MM-DD")
+  createdAt      DateTime  @default(now())
+  /// Send it automatically (e.g. Sage every week): { frequency, weekday, monthDay, hour } and who gets it
+  schedule       Json?
+  recipients     String[]  @default([])
+  /// Also save each run to the network folder
+  fileToNetwork  Boolean   @default(false)
+  lastSentAt     DateTime?
+}
+
+model NetworkSyncSetting {
+  id             String   @id @default(cuid())
+  organizationId String
+  companyId      String?
+  enabled        Boolean  @default(false)
+  config         Json     @default("{}")
+  updatedAt      DateTime @updatedAt
+}
+
+/// Equipment rented in for a job (rental tracker).
+model Rental {
+  id               String         @id @default(cuid())
+  organizationId   String
+  companyId        String
+  siteId           String
+  contactId        String? // the rental company
+  description      String
+  unitNumber       String?
+  onRentDate       DateTime?      @db.Date
+  expectedOffDate  DateTime?      @db.Date
+  offRentDate      DateTime?      @db.Date
+  rate             Decimal?       @db.Decimal(12, 2)
+  ratePer          RentalRatePer?
+  poNumber         String?
+  insured          Boolean        @default(false)
+  insuranceNotes   String?
+  maintenanceNotes String?
+  notes            String?
+  createdById      String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  site    Site        @relation(fields: [siteId], references: [id])
+  contact Contact?    @relation(fields: [contactId], references: [id])
+  files   FileAsset[]
+
+  @@index([siteId])
+}
+
+/// WCB clearance / insurance certificates for vendors and subcontractors.
+model ComplianceRecord {
+  id             String         @id @default(cuid())
+  organizationId String
+  contactId      String
+  kind           ComplianceKind
+  /// WCB account / policy number
+  reference      String?
+  /// Insurer or board (e.g. "WorkSafeBC")
+  provider       String?
+  coverage       String?
+  expiresOn      DateTime?      @db.Date
+  fileId         String?        @unique
+  notes          String?
+  createdById    String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  contact Contact    @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  file    FileAsset? @relation(fields: [fileId], references: [id])
+
+  @@index([organizationId, expiresOn])
+}
+
+/// Editable email wording per company, and whether it sends straight away or waits for review.
+model EmailTemplate {
+  id          String    @id @default(cuid())
+  companyId   String
+  key         String
+  subject     String
+  body        String
+  mode        EmailMode
+  updatedById String?
+  updatedAt   DateTime  @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, key])
+}
+
+/// Who hears about what on a job (set on the job page). No rules = the job's people get the delivery notices.
+model SiteNotifyRule {
+  id        String   @id @default(cuid())
+  siteId    String
+  /// A person in SupplyLine…
+  userId    String?
+  /// …or anyone else, by email
+  email     String?
+  name      String?
+  events    String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  site Site  @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([siteId, userId])
+  @@unique([siteId, email])
+}
+
+/// Holdback % for one subcontractor on one project (overrides the project's default).
+model SubHoldback {
+  id        String  @id @default(cuid())
+  siteId    String
+  contactId String
+  pct       Decimal @db.Decimal(5, 2)
+
+  site    Site    @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@unique([siteId, contactId])
+}
+
+/// A vendor invoice or credit note (accounts payable).
+model ApInvoice {
+  id                 String    @id @default(cuid())
+  organizationId     String
+  companyId          String
+  kind               ApDocKind @default(INVOICE)
+  status             ApStatus  @default(RECEIVED)
+  vendorId           String?
+  vendorName         String?
+  invoiceNumber      String?
+  invoiceDate        DateTime? @db.Date
+  dueDate            DateTime? @db.Date
+  purchaseOrderId    String?
+  poNumberText       String?
+  siteId             String?
+  equipmentId        String?
+  costCode           String?
+  subtotal           Decimal?  @db.Decimal(14, 2)
+  gst                Decimal?  @db.Decimal(14, 2)
+  pst                Decimal?  @db.Decimal(14, 2)
+  total              Decimal?  @db.Decimal(14, 2)
+  /// Subcontractor holdback on this invoice
+  holdbackPct        Decimal?  @db.Decimal(5, 2)
+  holdbackAmount     Decimal?  @db.Decimal(14, 2)
+  holdbackReleasedAt DateTime?
+  /// Why it isn't clean (shown in the inbox)
+  matchIssues        String[]
+  /// Credit / revised invoice: the invoice number it refers to
+  refInvoiceNumber   String?
+  replacesId         String?
+  fileId             String?
+  receivedVia        String    @default("UPLOAD") // UPLOAD | FOLDER
+  sourcePath         String?
+  folderState        String? // which network folder the file is in now
+  readByAi           Boolean   @default(false)
+  aiRaw              Json?
+  rejectedReason     String?
+  rejectedAt         DateTime?
+  rejectionSentTo    String?
+  rejectionSentAt    DateTime?
+  holdReason         String?
+  approvedAt         DateTime?
+  paidAt             DateTime? @db.Date
+  paymentRef         String?
+  notes              String?
+  createdById        String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  vendor        Vendor?         @relation(fields: [vendorId], references: [id])
+  purchaseOrder PurchaseOrder?  @relation(fields: [purchaseOrderId], references: [id])
+  site          Site?           @relation(fields: [siteId], references: [id])
+  lines         ApInvoiceLine[]
+  approvals     ApApproval[]
+
+  @@index([organizationId, status])
+  @@index([companyId, invoiceNumber])
+}
+
+model ApInvoiceLine {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  lineNo      Int
+  description String
+  qty         Decimal? @db.Decimal(14, 3)
+  uom         String?
+  unitPrice   Decimal? @db.Decimal(14, 4)
+  amount      Decimal? @db.Decimal(14, 2)
+  poLineId    String?
+  matchNote   String?
+
+  invoice ApInvoice          @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  poLine  PurchaseOrderLine? @relation(fields: [poLineId], references: [id])
+}
+
+/// One approval step (MAIN, in order) or side review (SIDE, alongside) on an invoice.
+model ApApproval {
+  id           String    @id @default(cuid())
+  invoiceId    String
+  kind         String // MAIN | SIDE
+  step         Int
+  /// PROCUREMENT | PM | OPS | ADMIN | USER
+  approverType String
+  userId       String? // a named person (USER), or who it's waiting for
+  decision     String    @default("PENDING") // PENDING | APPROVED | PASSED | REJECTED | HOLD | REVIEWED | FLAGGED
+  note         String?
+  decidedById  String?
+  decidedAt    DateTime?
+  createdAt    DateTime  @default(now())
+
+  invoice ApInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId, kind, step])
+}
+
+/// Customers we bill (accounts receivable).
+model Customer {
+  id             String   @id @default(cuid())
+  organizationId String
+  companyId      String
+  name           String
+  contactName    String?
+  email          String?
+  phone          String?
+  address        String?
+  city           String?
+  province       String?
+  postalCode     String?
+  gstNumber      String?
+  termsDays      Int      @default(30)
+  notes          String?
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  company  Company     @relation(fields: [companyId], references: [id])
+  sites    Site[]
+  invoices ArInvoice[]
+
+  @@unique([companyId, name])
+}
+
+model ArInvoice {
+  id             String    @id @default(cuid())
+  organizationId String
+  companyId      String
+  customerId     String
+  siteId         String?
+  invoiceNumber  String
+  invoiceDate    DateTime  @db.Date
+  dueDate        DateTime  @db.Date
+  status         ArStatus  @default(DRAFT)
+  description    String?
+  subtotal       Decimal   @db.Decimal(14, 2)
+  gstRate        Decimal   @db.Decimal(6, 4)
+  pstRate        Decimal   @db.Decimal(6, 4)
+  gst            Decimal   @db.Decimal(14, 2)
+  pst            Decimal   @db.Decimal(14, 2)
+  holdbackPct    Decimal?  @db.Decimal(5, 2)
+  holdbackAmount Decimal   @default(0) @db.Decimal(14, 2)
+  total          Decimal   @db.Decimal(14, 2)
+  amountPaid     Decimal   @default(0) @db.Decimal(14, 2)
+  sentAt         DateTime?
+  paidAt         DateTime?
+  fileId         String?
+  createdById    String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  customer Customer        @relation(fields: [customerId], references: [id])
+  site     Site?           @relation(fields: [siteId], references: [id])
+  lines    ArInvoiceLine[]
+  payments ArPayment[]
+
+  @@unique([companyId, invoiceNumber])
+}
+
+model ArInvoiceLine {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  lineNo      Int
+  description String
+  qty         Decimal @db.Decimal(14, 3)
+  uom         String
+  unitPrice   Decimal @db.Decimal(14, 4)
+  amount      Decimal @db.Decimal(14, 2)
+  costCode    String?
+
+  invoice ArInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+model ArPayment {
+  id              String   @id @default(cuid())
+  invoiceId       String
+  paidOn          DateTime @db.Date
+  amount          Decimal  @db.Decimal(14, 2)
+  reference       String?
+  holdbackRelease Boolean  @default(false)
+  createdById     String
+  createdAt       DateTime @default(now())
+
+  invoice ArInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+/// Budget per job and cost code (compared with committed POs and approved invoices).
+model JobBudget {
+  id       String  @id @default(cuid())
+  siteId   String
+  costCode String
+  amount   Decimal @db.Decimal(14, 2)
+  notes    String?
+
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([siteId, costCode])
+}
+
+/// A document waiting to be copied into the company's network folders.
+model FilingJob {
+  id             String    @id @default(cuid())
+  organizationId String
+  companyId      String
+  /// ORDER_PDF, ORDER_XLSX, BOL_PDF, PO_PDF, PACKING_PDF, RECEIPT_PHOTO, AP_INVOICE, AR_INVOICE, QC_DOC, SUBCONTRACT
+  docType        String
+  fileId         String
+  /// Folder + file name under the filing root
+  relativePath   String
+  /// DIRECT (the server writes it) or SYNC (the Sync app on your network does)
+  mode           String
+  status         String    @default("PENDING") // PENDING | DONE | FAILED
+  attempts       Int       @default(0)
+  error          String?
+  deliveredAt    DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([organizationId, status])
+}
+
+/// A SupplyLine Sync app installed on a PC on the customer's network.
+model SyncDevice {
+  id             String    @id @default(cuid())
+  organizationId String
+  name           String
+  tokenHash      String    @unique
+  lastSeenAt     DateTime?
+  lastVersion    String?
+  createdById    String
+  createdAt      DateTime  @default(now())
+  revokedAt      DateTime?
+}
+
+/// A trailer (or trailer type) in the organization's library, for the load builder.
+model Trailer {
+  id               String   @id @default(cuid())
+  organizationId   String
+  name             String
+  /// FLATDECK | STEP_DECK | DOUBLE_DROP | LOWBOY | B_TRAIN | TRUCK_DECK | PICKUP | OTHER
+  kind             String
+  unitNumber       String?
+  /// Owner / carrier (a trucking contact), or ours when empty
+  carrierContactId String?
+  /// Usable deck, metres
+  deckLengthM      Decimal  @db.Decimal(6, 2)
+  deckWidthM       Decimal  @db.Decimal(6, 2)
+  /// Deck height off the road (for the overall height check)
+  deckHeightM      Decimal  @db.Decimal(6, 2)
+  /// Overall legal height without a permit (BC: 4.15 m)
+  maxHeightM       Decimal  @default(4.15) @db.Decimal(6, 2)
+  /// Overall legal width without a permit (2.6 m)
+  maxWidthM        Decimal  @default(2.6) @db.Decimal(6, 2)
+  maxPayloadKg     Decimal  @db.Decimal(10, 1)
+  notes            String?
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  bols BillOfLading[]
+
+  @@index([organizationId, active])
+}
+
+/// A meeting format (the 70-30 template, or any other), steps in order.
+model MeetingTemplate {
+  id             String   @id @default(cuid())
+  organizationId String
+  /// null = every company
+  companyId      String?
+  name           String
+  /// [{ key, title, prompt, minutes, kind: NOTES | REVIEW_ACTIONS | CHECKLIST, items: string[] }]
+  steps          Json
+  isDefault      Boolean  @default(false)
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  meetings Meeting[]
+
+  @@index([organizationId])
+}
+
+/// One meeting: run step by step, optional recording + transcript, minutes PDF.
+model Meeting {
+  id             String    @id @default(cuid())
+  organizationId String
+  companyId      String
+  siteId         String?
+  templateId     String?
+  title          String
+  scheduledFor   DateTime?
+  startedAt      DateTime?
+  endedAt        DateTime?
+  /// PLANNED | IN_PROGRESS | DONE
+  status         String    @default("PLANNED")
+  /// [{ userId?, name, email?, present }]
+  attendees      Json      @default("[]")
+  /// The template's steps when it started, each with its notes and ticks
+  steps          Json      @default("[]")
+  currentStep    Int       @default(0)
+  transcript     String?
+  summary        String?
+  pdfFileId      String?
+  createdById    String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  template MeetingTemplate?    @relation(fields: [templateId], references: [id])
+  actions  MeetingActionItem[]
+  audio    FileAsset[]         @relation("MeetingAudio")
+
+  @@index([organizationId, siteId])
+}
+
+/// Who does what by when — from a meeting (typed, or found by the AI in the notes / transcript).
+model MeetingActionItem {
+  id             String    @id @default(cuid())
+  organizationId String
+  meetingId      String?
+  siteId         String?
+  stepKey        String?
+  text           String
+  assigneeUserId String?
+  assigneeName   String?
+  dueDate        DateTime? @db.Date
+  /// OPEN | DONE | CANCELLED
+  status         String    @default("OPEN")
+  doneAt         DateTime?
+  /// MANUAL | AI
+  source         String    @default("MANUAL")
+  createdById    String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  meeting Meeting? @relation(fields: [meetingId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, status])
+  @@index([assigneeUserId, status])
+}
+
+/// One run of the health checks (database, email, storage, AI, folders, Sync app…).
+model HealthCheckRun {
+  id             String   @id @default(cuid())
+  /// null = the platform-wide checks
+  organizationId String?
+  ok             Boolean
+  /// [{ key, label, ok, detail, ms }]
+  results        Json
+  /// An alert went out for this run (only when something changed)
+  alerted        Boolean  @default(false)
+  at             DateTime @default(now())
+
+  @@index([organizationId, at])
+}
+
+/// Errors from the server and the apps (same error = one row with a count).
+model ErrorEvent {
+  id             String    @id @default(cuid())
+  fingerprint    String    @unique
+  /// SERVER | CLIENT
+  source         String
+  organizationId String?
+  userId         String?
+  app            String?
+  version        String?
+  message        String
+  stack          String?
+  path           String?
+  count          Int       @default(1)
+  firstAt        DateTime  @default(now())
+  lastAt         DateTime  @default(now())
+  resolvedAt     DateTime?
+
+  @@index([lastAt])
+}
+
+/// Carriers we ship with ("Ship via" on POs), with our account number for each.
+model ShipVia {
+  id             String   @id @default(cuid())
+  organizationId String
+  /// null = every company
+  companyId      String?
+  name           String
+  accountNumber  String?
+  phone          String?
+  email          String?
+  /// Optional link to the trucking contact
+  contactId      String?
+  notes          String?
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([organizationId, active])
+}
+
+/// Pre-job equipment plan: what a job will need, from when to when, and how it's covered.
+model JobEquipmentNeed {
+  id             String   @id @default(cuid())
+  organizationId String
+  siteId         String
+  /// What's needed, e.g. "320 excavator", "Pile hammer"
+  description    String
+  /// Matches the equipment register's category (for finding our own units)
+  category       String?
+  qty            Int      @default(1)
+  fromDate       DateTime @db.Date
+  toDate         DateTime @db.Date
+  /// One of our units assigned to it
+  equipmentId    String?
+  /// NEEDED | OWN (one of ours) | RENT | BUY
+  coverage       String   @default("NEEDED")
+  notes          String?
+  createdById    String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([organizationId, fromDate])
+  @@index([siteId])
+}
+
+/// A report someone built (sections from any data), optionally sent on a schedule.
+model SavedReport {
+  id             String    @id @default(cuid())
+  organizationId String
+  name           String
+  /// [{ dataset, title, columns: [field] }]
+  sections       Json
+  /// { period, from, to, siteIds, companyId }
+  filters        Json      @default("{}")
+  format         String    @default("xlsx") // xlsx | pdf
+  /// { frequency: DAILY | WEEKLY | MONTHLY, weekday, monthDay, hour } — null = not scheduled
+  schedule       Json?
+  recipients     String[]  @default([])
+  lastSentAt     DateTime?
+  createdById    String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([organizationId])
+}
+
+/// The assistant: a conversation with one person (Phase 20).
+model AssistantConversation {
+  id             String             @id @default(cuid())
+  organizationId String
+  userId         String
+  title          String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  messages       AssistantMessage[]
+
+  @@index([organizationId, userId, updatedAt])
+}
+
+model AssistantMessage {
+  id             String                @id @default(cuid())
+  conversationId String
+  conversation   AssistantConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String // USER | ASSISTANT
+  text           String
+  /// A proposed action { type, params, confirm } — only done after the person says yes
+  action         Json?
+  actionStatus   String? // PROPOSED | DONE | CANCELLED | FAILED
+  actionResult   Json?
+  /// The assistant couldn't help (shown to admins in Insights)
+  unanswered     Boolean               @default(false)
+  createdAt      DateTime              @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+/// What people call things ("the bridge job" = JOB#2249). userId null = everyone in the organization.
+model Nickname {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String?
+  phrase         String
+  kind           String // SITE | LOCATION | VENDOR | EQUIPMENT | ITEM
+  targetId       String?
+  targetLabel    String
+  createdById    String
+  createdAt      DateTime @default(now())
+
+  @@index([organizationId, phrase])
+}
+
+/// Did the person keep a suggested default or change it? Used to rank suggestions (this organization only).
+model SuggestionEvent {
+  id             String   @id @default(cuid())
+  organizationId String
+  companyId      String?
+  userId         String
+  kind           String // e.g. PO_SHIP_VIA, PO_YARD, ITEM
+  contextKey     String   @default("")
+  value          String
+  accepted       Boolean
+  createdAt      DateTime @default(now())
+
+  @@index([organizationId, kind, contextKey])
+}
+
+/// A document attached to a project (drawings, subcontract agreement…), shown on POs by its link name.
+model ProjectDocument {
+  id             String                  @id @default(cuid())
+  organizationId String
+  siteId         String
+  fileId         String
+  linkName       String
+  createdById    String
+  createdAt      DateTime                @default(now())
+  purchaseOrders PurchaseOrderDocument[]
+
+  @@index([siteId])
+}
+
+/// Which project documents go with which PO (picked per PO; added at the end of the PO).
+model PurchaseOrderDocument {
+  purchaseOrderId   String
+  projectDocumentId String
+  projectDocument   ProjectDocument @relation(fields: [projectDocumentId], references: [id], onDelete: Cascade)
+  addedAt           DateTime        @default(now())
+
+  @@id([purchaseOrderId, projectDocumentId])
+  @@index([purchaseOrderId])
+}

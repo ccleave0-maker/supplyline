@@ -1,0 +1,19 @@
+{
+  "organization": { "name": "Example Group", "slug": "example-group" },
+  "owner": { "name": "Your Name", "email": "you@example.com" },
+  "companies": [
+    {
+      "code": "EXA",
+      "name": "Example Company A",
+      "themeColor": "#E8701A",
+      "procurementEmails": ["procurement@example.com"],
+      "yardEmails": []
+    }
+  ],
+  "yards": [
+    { "code": "Y1", "name": "Main Yard", "city": "Anytown", "province": "BC", "companies": ["EXA"] }
+  ],
+  "sampleJobs": [
+    { "company": "EXA", "jobNumber": "1001", "name": "Sample Job", "city": "Anytown", "province": "BC" }
+  ]
+}

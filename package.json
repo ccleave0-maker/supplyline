@@ -1,0 +1,23 @@
+{
+  "name": "supplyline",
+  "private": true,
+  "version": "0.1.0",
+  "description": "SupplyLine — centralized construction procurement",
+  "packageManager": "pnpm@12.11.2",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @supplyline/server --filter @supplyline/app-web dev",
+    "dev:server": "pnpm --filter @supplyline/server dev",
+    "dev:web": "pnpm --filter @supplyline/app-web dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "sync:routes": "node scripts/sync-routes.mjs",
+    "db:migrate": "pnpm --filter @supplyline/server db:migrate",
+    "db:seed": "pnpm --filter @supplyline/server db:seed",
+    "db:setup-private": "pnpm --filter @supplyline/server db:setup-private",
+    "db:reset": "pnpm --filter @supplyline/server db:reset"
+  }
+}

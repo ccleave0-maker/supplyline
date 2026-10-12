@@ -1,0 +1,166 @@
+/* SupplyLine design tokens. --brand* are set at runtime from the active company's theme. */
+:root {
+  --brand: #1f4e79;
+  --brand-contrast: #ffffff;
+  --brand-ink-light: #1f4e79;
+  --brand-ink-dark: #8fb8de;
+  --brand-ink: var(--brand-ink-light);
+
+  --surface: #ffffff;
+  --surface-2: #f3f4f6;
+  --ink: #111827;
+  --muted: #4b5563;
+  --line: #d1d5db;
+  --danger: #b91c1c;
+  --danger-contrast: #ffffff;
+  --ok: #15803d;
+  --warn-bg: #fef3c7;
+  --warn-ink: #78350f;
+  color-scheme: light;
+}
+
+/* Dark colours: used when the user picks Dark, or picks nothing and the device is in dark mode. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --brand-ink: var(--brand-ink-dark);
+    --surface: #111317;
+    --surface-2: #1c1f25;
+    --ink: #f3f4f6;
+    --muted: #b6bcc6;
+    --line: #3a3f48;
+    --danger: #f87171;
+    --danger-contrast: #111317;
+    --ok: #4ade80;
+    --warn-bg: #3b2f12;
+    --warn-ink: #fde68a;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --brand-ink: var(--brand-ink-dark);
+  --surface: #111317;
+  --surface-2: #1c1f25;
+  --ink: #f3f4f6;
+  --muted: #b6bcc6;
+  --line: #3a3f48;
+  --danger: #f87171;
+  --danger-contrast: #111317;
+  --ok: #4ade80;
+  --warn-bg: #3b2f12;
+  --warn-ink: #fde68a;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-brand: var(--brand);
+  --color-brand-fg: var(--brand-contrast);
+  --color-brand-ink: var(--brand-ink);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-danger: var(--danger);
+  --color-danger-fg: var(--danger-contrast);
+  --color-ok: var(--ok);
+  --color-warn-bg: var(--warn-bg);
+  --color-warn-ink: var(--warn-ink);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+/* iOS Dynamic Type: follow the user's text size setting inside the app */
+@supports (font: -apple-system-body) {
+  html.ios {
+    font: -apple-system-body;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--surface-2);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 3px solid var(--brand-ink);
+  outline-offset: 2px;
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.safe-x {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Hover animations — only for a real mouse/trackpad (not touch screens), and
+   switched off for anyone who has reduced motion turned on. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .sl-btn {
+    transition:
+      transform 160ms ease,
+      box-shadow 160ms ease,
+      filter 160ms ease,
+      background-color 160ms ease;
+  }
+  .sl-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px -6px color-mix(in srgb, var(--brand) 70%, transparent);
+  }
+  .sl-btn:not(:disabled):active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: none;
+  }
+
+  .sl-row {
+    transition:
+      background-color 160ms ease,
+      padding-left 160ms ease;
+  }
+  .sl-row:hover {
+    padding-left: 1.4rem;
+  }
+  .sl-row .sl-chevron {
+    transition: transform 160ms ease, color 160ms ease;
+  }
+  .sl-row:hover .sl-chevron {
+    transform: translateX(4px);
+    color: var(--brand-ink);
+  }
+  .sl-row:hover .sl-row-title {
+    color: var(--brand-ink);
+  }
+
+  .sl-nav .sl-nav-icon {
+    display: inline-block;
+    transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .sl-nav:hover .sl-nav-icon {
+    transform: translateY(-3px) scale(1.15);
+  }
+
+  .sl-icon-btn {
+    transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .sl-icon-btn:hover {
+    transform: rotate(-12deg) scale(1.08);
+  }
+}
+
+/* Leaflet sits under our sticky header/nav */
+.leaflet-container {
+  z-index: 0;
+  font: inherit;
+}
