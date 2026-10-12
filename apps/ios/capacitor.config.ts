@@ -8,6 +8,9 @@ const config: CapacitorConfig = {
   ios: {
     contentInset: 'never',
     scheme: 'SupplyLine',
+    // No white flash while the app starts, and no link previews on long-press.
+    backgroundColor: '#f3f4f6',
+    allowsLinkPreview: false,
   },
 };
 

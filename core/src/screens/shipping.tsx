@@ -747,7 +747,7 @@ export function BolEditScreen() {
         </div>
       </Card>
 
-      <div className="safe-bottom fixed inset-x-0 bottom-16 z-10 border-t border-line bg-surface p-3 lg:static lg:border-0 lg:bg-transparent lg:p-0">
+      <div className="sl-action-bar fixed inset-x-0 z-10 border-t border-line bg-surface p-3 lg:static lg:border-0 lg:bg-transparent lg:p-0">
         <ErrorBanner error={save.error} />
         <div className="flex flex-wrap items-center gap-2">
           <Button busy={save.busy} disabled={!picked} onClick={() => void save.run(true)}>
@@ -1238,7 +1238,7 @@ export function ReceiveBolScreen() {
               <Card>
                 <TextArea label="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} />
               </Card>
-              <div className="safe-bottom fixed inset-x-0 bottom-16 z-10 border-t border-line bg-surface p-3 lg:static lg:border-0 lg:bg-transparent lg:p-0">
+              <div className="sl-action-bar fixed inset-x-0 z-10 border-t border-line bg-surface p-3 lg:static lg:border-0 lg:bg-transparent lg:p-0">
                 <ErrorBanner error={save.error} />
                 {progress && <p className="mb-2 text-muted" aria-live="polite">{progress}</p>}
                 <Button className="w-full lg:w-auto" busy={save.busy} onClick={() => void save.run()}>
@@ -1458,7 +1458,7 @@ export function ReturnScreen() {
               </div>
             </div>
           </Card>
-          <div className="safe-bottom fixed inset-x-0 bottom-16 z-10 border-t border-line bg-surface p-3 lg:static lg:border-0 lg:bg-transparent lg:p-0">
+          <div className="sl-action-bar fixed inset-x-0 z-10 border-t border-line bg-surface p-3 lg:static lg:border-0 lg:bg-transparent lg:p-0">
             <ErrorBanner error={send.error} />
             <Button className="w-full lg:w-auto" busy={send.busy} disabled={!count || !yardId} onClick={() => void send.run()}>
               Create return BOL ({count})

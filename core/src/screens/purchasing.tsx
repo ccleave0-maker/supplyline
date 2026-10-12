@@ -654,7 +654,7 @@ export function PurchaseOrderEditScreen() {
         </div>
       </Card>
 
-      <div className="safe-bottom fixed inset-x-0 bottom-16 z-10 border-t border-line bg-surface p-3 lg:static lg:border-0 lg:bg-transparent lg:p-0">
+      <div className="sl-action-bar fixed inset-x-0 z-10 border-t border-line bg-surface p-3 lg:static lg:border-0 lg:bg-transparent lg:p-0">
         <div className="flex flex-wrap gap-2">
           {committed ? (
             <>

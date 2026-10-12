@@ -44,6 +44,18 @@ function GoogleButton({ clientId, onToken }: { clientId: string; onToken: (t: st
   return <div ref={ref} className="flex min-h-12 justify-center" />;
 }
 
+const PENDING_KEY = 'login-pending';
+/** Codes last 10 minutes; after that start again from the email step. */
+function parsePending(raw: string | null): { email: string; at: number } | null {
+  try {
+    const p = raw ? (JSON.parse(raw) as { email?: unknown; at?: unknown }) : null;
+    if (!p || typeof p.email !== 'string' || typeof p.at !== 'number' || Date.now() - p.at > 10 * 60_000) return null;
+    return { email: p.email, at: p.at };
+  } catch {
+    return null;
+  }
+}
+
 export function LoginScreen() {
   const router = useRouter();
   const platform = usePlatform();
@@ -54,6 +66,17 @@ export function LoginScreen() {
   const [code, setCode] = useState('');
   const [devCode, setDevCode] = useState<string | null>(null);
   const codeRef = useRef<HTMLInputElement>(null);
+
+  // Remember a code that's on its way, so leaving to check email (or the phone closing the
+  // app in the background) comes back to the code box instead of the email step.
+  useEffect(() => {
+    void platform.prefs.get(PENDING_KEY).then((raw) => {
+      const p = parsePending(raw);
+      if (!p) return;
+      setEmail(p.email);
+      setStep('code');
+    });
+  }, [platform]);
 
   useEffect(() => {
     if (status === 'authenticated') router.replace(paths.home());
@@ -74,11 +97,13 @@ export function LoginScreen() {
     const r = await api.auth.requestCode(email);
     setDevCode(r.devCode ?? null);
     setStep('code');
+    await platform.prefs.set(PENDING_KEY, JSON.stringify({ email, at: Date.now() }));
     setTimeout(() => codeRef.current?.focus(), 50);
   });
 
   const verify = useAction(async () => {
     const result = await api.auth.verifyCode(email, code);
+    await platform.prefs.remove(PENDING_KEY);
     await signIn(result);
     router.replace(paths.home());
   });
@@ -93,7 +118,7 @@ export function LoginScreen() {
   const background = api.fileUrl(company?.loginBackgroundUrl);
 
   return (
-    <div className="relative flex min-h-dvh items-center justify-center bg-brand p-4">
+    <div className="sl-screen relative flex min-h-dvh items-center justify-center bg-brand">
       {/* Background photo slot: upload one per company in Admin › Companies */}
       {background ? (
         // eslint-disable-next-line @next/next/no-img-element
@@ -109,9 +134,9 @@ export function LoginScreen() {
         />
       )}
       <div aria-hidden="true" className="absolute inset-0 bg-black/35" />
-      <ColorModeToggle className="safe-top absolute top-4 right-4 z-10" />
 
-      <main className="safe-top safe-bottom relative w-full max-w-sm rounded-2xl bg-surface p-6 shadow-2xl">
+      <main className="relative w-full max-w-sm rounded-2xl bg-surface p-6 shadow-2xl">
+        <ColorModeToggle className="absolute top-2 right-2" />
         <div className="mb-6 flex flex-col items-center gap-3 text-center">
           {company ? (
             <CompanyMark name={company.name} code={company.code} logoUrl={api.fileUrl(company.logoUrl)} size={56} />
@@ -186,10 +211,14 @@ export function LoginScreen() {
             <Button type="submit" busy={verify.busy} className="w-full">
               Sign in
             </Button>
+            <Button type="button" variant="secondary" busy={send.busy} onClick={() => void send.run()}>
+              Send a new code
+            </Button>
             <Button
               type="button"
               variant="ghost"
               onClick={() => {
+                void platform.prefs.remove(PENDING_KEY);
                 setStep('email');
                 setCode('');
                 verify.setError(null);

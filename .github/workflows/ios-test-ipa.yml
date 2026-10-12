@@ -36,6 +36,24 @@ jobs:
           [ -d ios ] || pnpm exec cap add ios
           pnpm exec cap sync ios
 
+      # Why the app asks for each permission. iOS closes an app that uses the camera,
+      # photos or microphone without these.
+      - name: Permission wording
+        working-directory: apps/ios/ios/App/App
+        run: |
+          set_key() { /usr/libexec/PlistBuddy -c "Set :$1 $2" Info.plist 2>/dev/null || /usr/libexec/PlistBuddy -c "Add :$1 string $2" Info.plist; }
+          set_key NSCameraUsageDescription "SupplyLine uses the camera to scan QR codes and take photos of deliveries, packing slips and damage."
+          set_key NSPhotoLibraryUsageDescription "SupplyLine lets you attach photos you've already taken, like packing slips and receipts."
+          set_key NSPhotoLibraryAddUsageDescription "SupplyLine can save photos you take to your library."
+          set_key NSMicrophoneUsageDescription "SupplyLine uses the microphone when you tap the mic to speak to the assistant or record a meeting."
+          set_key NSSpeechRecognitionUsageDescription "SupplyLine turns what you say into text when you use voice commands."
+          # Phones only show it upright; iPads can turn.
+          /usr/libexec/PlistBuddy -c "Delete :UISupportedInterfaceOrientations" Info.plist || true
+          /usr/libexec/PlistBuddy -c "Add :UISupportedInterfaceOrientations array" Info.plist
+          /usr/libexec/PlistBuddy -c "Add :UISupportedInterfaceOrientations:0 string UIInterfaceOrientationPortrait" Info.plist
+          /usr/libexec/PlistBuddy -c "Add :UIFileSharingEnabled bool true" Info.plist || true
+          /usr/libexec/PlistBuddy -c "Add :LSSupportsOpeningDocumentsInPlace bool true" Info.plist || true
+
       # Test build only: let the app talk to a plain-http server on your network.
       - name: Allow the test server
         working-directory: apps/ios/ios/App/App

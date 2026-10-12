@@ -269,7 +269,7 @@ export function StockCheckScreen() {
           </Card>
         );
       })}
-      <div className="safe-bottom fixed inset-x-0 bottom-16 z-10 border-t border-line bg-surface p-3 lg:static lg:border-0 lg:bg-transparent lg:p-0">
+      <div className="sl-action-bar fixed inset-x-0 z-10 border-t border-line bg-surface p-3 lg:static lg:border-0 lg:bg-transparent lg:p-0">
         <ErrorBanner error={save.error} />
         <Button className="w-full lg:w-auto" busy={save.busy} disabled={answered === 0} onClick={() => void save.run()}>
           Save stock check ({answered}/{data.lines.length})
@@ -668,7 +668,7 @@ export function ReceiveScreen() {
               <Card>
                 <TextArea label="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} />
               </Card>
-              <div className="safe-bottom fixed inset-x-0 bottom-16 z-10 border-t border-line bg-surface p-3 lg:static lg:border-0 lg:bg-transparent lg:p-0">
+              <div className="sl-action-bar fixed inset-x-0 z-10 border-t border-line bg-surface p-3 lg:static lg:border-0 lg:bg-transparent lg:p-0">
                 <ErrorBanner error={save.error} />
                 {progress && <p className="mb-2 text-muted" aria-live="polite">{progress}</p>}
                 <Button className="w-full lg:w-auto" busy={save.busy} onClick={() => void save.run()}>

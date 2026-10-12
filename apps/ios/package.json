@@ -12,8 +12,11 @@
     "cap:open": "cap open ios"
   },
   "dependencies": {
+    "@capacitor/camera": "^8.2.5",
     "@capacitor/core": "^8.5.3",
+    "@capacitor/filesystem": "^8.1.4",
     "@capacitor/ios": "^8.5.3",
+    "@capacitor/share": "^8.0.3",
     "@supplyline/core": "workspace:*",
     "@supplyline/platform": "workspace:*",
     "next": "16.4.0",

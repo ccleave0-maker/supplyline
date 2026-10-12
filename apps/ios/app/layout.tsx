@@ -14,6 +14,10 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
+  // An app, not a web page: no pinch/double-tap zoom or zoom-on-type. Text size follows
+  // the iPhone's Settings › Display › Text Size instead.
+  maximumScale: 1,
+  userScalable: false,
   themeColor: BRANDING.defaultThemeColor,
 };
 

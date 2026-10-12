@@ -283,7 +283,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         Skip to content
       </a>
       <header className="safe-top safe-x sticky top-0 z-20 border-b border-line bg-surface">
-        <div className="flex min-h-14 items-center gap-3 px-4">
+        {/* Phones: logo, business unit, alerts and account on top; the tools wrap to a second row. */}
+        <div className="flex min-h-14 flex-wrap items-center gap-x-2 gap-y-1 px-3 py-1 sm:flex-nowrap sm:gap-3 sm:px-4 sm:py-0">
           {activeCompany ? (
             <CompanyMark name={activeCompany.name} code={activeCompany.code} logoUrl={api.fileUrl(activeCompany.logoUrl)} size={36} />
           ) : (
@@ -309,12 +310,14 @@ export function AppShell({ children }: { children: ReactNode }) {
               <p className="truncate font-semibold text-ink">{activeCompany?.name ?? me.organization.name}</p>
             )}
           </div>
-          <SearchBox />
-          <ScanButton variant="icon" />
+          <div className="order-last flex w-full items-center justify-around border-t border-line pt-1 sm:order-none sm:w-auto sm:justify-end sm:gap-3 sm:border-0 sm:pt-0">
+            <SearchBox />
+            <ScanButton variant="icon" />
+            <AssistantButton />
+            <VoiceNavButton destinations={allNav.map((n) => ({ path: n.href, label: n.label }))} />
+            <ColorModeToggle />
+          </div>
           <Bell />
-          <AssistantButton />
-          <VoiceNavButton destinations={allNav.map((n) => ({ path: n.href, label: n.label }))} />
-          <ColorModeToggle />
           <Link
             href={paths.account()}
             aria-label={`Account: ${me.user.name}`}
@@ -332,7 +335,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <AreaNav groups={navGroups} pathname={pathname} />
 
         {/* Switching business unit reloads the screen for that unit. */}
-        <main key={activeCompany?.id ?? 'none'} id="main" className="safe-x mx-auto w-full max-w-5xl flex-1 px-4 pt-4 pb-28 lg:pb-8">
+        <main key={activeCompany?.id ?? 'none'} id="main" className="sl-page mx-auto w-full max-w-5xl min-w-0 flex-1 pt-4 lg:pb-8">
           {children}
         </main>
       </div>
@@ -346,12 +349,12 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Link
                   href={item.href}
                   aria-current={active ? 'page' : undefined}
-                  className={cx('sl-nav flex min-h-16 flex-col items-center justify-center gap-0.5 text-sm font-semibold', active ? 'text-brand-ink' : 'text-muted')}
+                  className={cx('sl-nav flex min-h-16 flex-col items-center justify-center gap-1 px-1 text-center text-xs leading-tight font-semibold sm:text-sm', active ? 'text-brand-ink' : 'text-muted')}
                 >
                   <span aria-hidden="true" className="sl-nav-icon text-xl leading-none">
                     {item.icon}
                   </span>
-                  {item.label}
+                  <span className="line-clamp-2 break-words">{item.label}</span>
                 </Link>
               </li>
             );
