@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "next build",
-    "start": "npx serve out -l 3000",
+    "start": "serve out --no-clipboard -l tcp://0.0.0.0:${PORT:-3000}",
     "typecheck": "tsc --noEmit",
     "test": "echo \"no tests\""
   },
@@ -15,7 +15,8 @@
     "@supplyline/platform": "workspace:*",
     "next": "16.4.0",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "serve": "^14.2.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",

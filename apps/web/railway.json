@@ -1,0 +1,13 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "RAILPACK",
+    "buildCommand": "pnpm --filter @supplyline/app-web... build",
+    "watchPatterns": ["apps/web/**", "core/**", "platform/**", "pnpm-lock.yaml"]
+  },
+  "deploy": {
+    "startCommand": "pnpm --filter @supplyline/app-web start",
+    "healthcheckPath": "/",
+    "restartPolicyType": "ON_FAILURE"
+  }
+}

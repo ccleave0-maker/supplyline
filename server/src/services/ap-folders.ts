@@ -9,6 +9,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import type { AuthContext } from '../lib/auth';
 import { db } from '../lib/db';
+import { joinIn } from '../lib/folder-path';
 import { accountingOf, receiveInvoice } from './ap';
 import { filingOf } from './filing';
 
@@ -53,7 +54,7 @@ export async function scanApFolders(onlyOrgId?: string): Promise<{ imported: num
     for (const name of names) {
       const ext = path.extname(name).toLowerCase();
       if (!TYPES[ext] || name.startsWith('~$') || name.startsWith('.')) continue;
-      const full = path.join(inbox, name);
+      const full = joinIn(inbox, name);
       try {
         const stat = await fs.stat(full);
         if (!stat.isFile() || Date.now() - stat.mtimeMs < 5_000) continue; // still being copied in

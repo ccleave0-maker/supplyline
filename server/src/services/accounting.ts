@@ -28,6 +28,7 @@ import { renderArInvoicePdf } from '../pdf/ar-invoice-pdf';
 import { accessibleCompanyIds, assertCompanyAccessible, assertSiteVisible } from './access';
 import { accountingOf } from './ap';
 import { fileUrl, logoForPdf, saveUpload } from './files';
+import { joinIn } from '../lib/folder-path';
 import { fileDocument, filingOf, jobLabel } from './filing';
 import { sendTemplated } from './mail';
 import { todayLocal } from './project';
@@ -548,7 +549,7 @@ async function backupFolderFor(companyId: string, invoiceNumber: string, siteId:
   const now = new Date();
   const vars: Record<string, string> = { company: c!.code, job: (await jobLabel(siteId)) ?? 'No job', year: String(now.getFullYear()), month: String(now.getMonth() + 1).padStart(2, '0'), vendor: 'Vendor', invoice: invoiceNumber };
   const pattern = f.folders.AR_BACKUP || FILING_DOC_TYPES.find((d) => d.key === 'AR_BACKUP')!.folder;
-  return [f.root.replace(/[\\/]+$/, ''), pattern.replace(/\{(\w+)\}/g, (_, k: string) => vars[k] ?? '')].join('\\');
+  return joinIn(f.root, pattern.replace(/\{(\w+)\}/g, (_, k: string) => vars[k] ?? ''));
 }
 
 export async function addArBackup(auth: AuthContext, id: string, file: File) {

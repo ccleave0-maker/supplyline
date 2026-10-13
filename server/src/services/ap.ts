@@ -29,6 +29,7 @@ import { isAdmin, requirePermission, type AuthContext } from '../lib/auth';
 import { db } from '../lib/db';
 import { env } from '../lib/env';
 import { badRequest, conflict, forbidden, notFound } from '../lib/errors';
+import { fileNameOf, isFullPath, joinIn } from '../lib/folder-path';
 import { viaName } from '../integrations/email';
 import { accessibleCompanyIds, assertCompanyAccessible } from './access';
 import { completeIfConsumed } from './purchasing';
@@ -69,7 +70,7 @@ export async function saveAccountingSettings(auth: AuthContext, companyId: strin
   requirePermission(auth, 'company:edit');
   const c = await assertCompanyAccessible(auth, companyId);
   for (const [k, v] of Object.entries(input.folders)) {
-    if (v && !path.isAbsolute(v)) throw badRequest(`The ${k} folder must be a full path, e.g. P:\\AP\\Inbox or \\\\server\\share\\AP\\Inbox.`);
+    if (v && !isFullPath(v)) throw badRequest(`The ${k} folder must be a full path, e.g. P:\\AP\\Inbox or \\\\server\\share\\AP\\Inbox.`);
   }
   const settings = { ...((c.settings as Record<string, unknown>) ?? {}), accounting: input };
   await db.company.update({ where: { id: companyId }, data: { settings } });
@@ -817,12 +818,12 @@ export async function moveFile(id: string, state: 'IN_REVIEW' | 'APPROVED' | 'RE
   if (!dir) return;
   try {
     await fs.mkdir(dir, { recursive: true });
-    let dest = path.join(dir, path.basename(inv.sourcePath));
+    let dest = joinIn(dir, fileNameOf(inv.sourcePath));
     for (let i = 1; i < 50; i++) {
       try {
         await fs.access(dest);
         const ext = path.extname(inv.sourcePath);
-        dest = path.join(dir, `${path.basename(inv.sourcePath, ext)} (${i})${ext}`);
+        dest = joinIn(dir, `${fileNameOf(inv.sourcePath, ext)} (${i})${ext}`);
       } catch {
         break;
       }

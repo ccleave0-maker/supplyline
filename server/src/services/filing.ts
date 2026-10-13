@@ -11,6 +11,7 @@ import { audit } from '../lib/audit';
 import { requirePermission, type AuthContext } from '../lib/auth';
 import { db } from '../lib/db';
 import { badRequest, notFound } from '../lib/errors';
+import { isFullPath } from '../lib/folder-path';
 import { assertCompanyAccessible } from './access';
 import { fileUrl, readFileAsset } from './files';
 
@@ -29,7 +30,7 @@ export async function getFilingSettings(auth: AuthContext, companyId: string) {
 export async function saveFilingSettings(auth: AuthContext, companyId: string, input: FilingSettings) {
   requirePermission(auth, 'integrations:manage');
   const c = await assertCompanyAccessible(auth, companyId);
-  if (input.enabled && input.mode === 'DIRECT' && !path.isAbsolute(input.root)) throw badRequest('Enter the full folder path, e.g. P:\\SupplyLine or \\\\server\\share\\SupplyLine.');
+  if (input.enabled && input.mode === 'DIRECT' && !isFullPath(input.root)) throw badRequest('Enter the full folder path, e.g. P:\\SupplyLine or \\\\server\\share\\SupplyLine.');
   if (input.enabled && input.mode === 'SYNC' && !input.root.trim()) throw badRequest('Enter the folder the Sync app should write into (a path on that PC).');
   await db.company.update({ where: { id: companyId }, data: { settings: { ...((c.settings as Record<string, unknown>) ?? {}), filing: input } } });
   await audit(db, auth, 'company.filing', 'Company', companyId, null, input);

@@ -1,8 +1,8 @@
-# Deploy: push to the "staging" branch → staging; push to "main" → production.
-# Runs the tests, applies database changes, then tells the host to deploy.
-# Set these in GitHub › Settings › Environments (staging / production) › Secrets:
-#   DATABASE_URL     the database for that environment
-#   DEPLOY_HOOK_URL  the host's deploy hook (Render › service › Settings › Deploy Hook)
+# Deploy: push to "staging" → staging; push to "main" → production.
+# Runs the tests, then applies database changes. Railway deploys the new version after
+# this workflow passes (Railway › service › Settings › "Wait for CI" is on).
+# Set in GitHub › Settings › Environments (staging / production) › Secrets:
+#   DATABASE_URL     that environment's database (Supabase › Connect › direct/session URL)
 name: Deploy
 on:
   push:
@@ -12,7 +12,7 @@ jobs:
   test:
     uses: ./.github/workflows/ci.yml
 
-  deploy:
+  migrate:
     needs: test
     runs-on: ubuntu-latest
     environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
@@ -28,7 +28,3 @@ jobs:
         run: pnpm --filter @supplyline/server exec prisma migrate deploy
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      - name: Deploy
-        run: curl -fsS -X POST "$DEPLOY_HOOK_URL"
-        env:
-          DEPLOY_HOOK_URL: ${{ secrets.DEPLOY_HOOK_URL }}

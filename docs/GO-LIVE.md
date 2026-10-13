@@ -15,33 +15,48 @@ always go in the host's settings or the admin pages — never in code or chat.**
 
 ## 2. Database and files (Supabase, Canada)
 1. Create two projects in **ca-central-1**: `supplyline-prod` and `supplyline-staging`.
-2. Database › Connection string (pooled) → `DATABASE_URL` for each.
+2. Connect › connection strings: the pooled one → Railway `DATABASE_URL`; the direct/session one →
+   the GitHub environment secret `DATABASE_URL` (used to apply database changes).
 3. Storage › new private bucket `supplyline` → `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`.
 4. Backups: Supabase keeps daily backups (turn on Point-in-Time Recovery on a paid plan).
    Extra copy you hold: `pnpm --filter @supplyline/server backup` (BACKUP_DIR can be a network drive).
 
 ## 3. Code on GitHub (tests on every change)
-1. Create a **private** repository on your personal GitHub account and push this folder.
-   `.github/workflows/ci.yml` then runs every typecheck and test on each push.
-2. Settings › Environments: make `staging` and `production`, each with secrets
-   `DATABASE_URL` and `DEPLOY_HOOK_URL` (from step 4).
+1. The **private** repository on your personal GitHub account holds the code.
+   `.github/workflows/ci.yml` runs every typecheck and test on each push.
+2. Settings › Environments: make `staging` and `production`, each with the secret
+   `DATABASE_URL` (that environment's Supabase database, the direct/session connection).
 3. Push to the `staging` branch to deploy staging; merge to `main` for production.
-   The deploy workflow runs the tests, applies database changes, then deploys.
+   The Deploy workflow runs the tests and applies database changes; Railway then deploys.
 
-## 4. Hosting (Render)
-1. New › Blueprint › pick the repository (uses `render.yaml`: production + staging).
-2. For each server, fill in the settings marked “sync: false”:
+## 4. Hosting (Railway)
+1. Sign up at railway.com with GitHub, and give it access to **only** the supplyline repository.
+2. New project › Deploy from GitHub repo › supplyline. Make two services from the same repo:
+   - **server** › Settings › Config-as-code: `server/railway.json` (Docker, health check
+     `/api/health`). Leave Root Directory empty (the image builds from the whole repo).
+   - **web** › Settings › Config-as-code: `apps/web/railway.json` (builds the screens and serves them).
+3. Both services › Settings › Source: branch `main`, and turn on **Wait for CI** so a version
+   only goes live after the tests pass and the database is updated.
+4. Region: Settings › Deploy › Region — the closest to Canada (US West or US East). The
+   company data itself stays in Supabase Canada.
+5. **server** › Variables (Raw editor is quickest). Enter these yourself — never in chat:
+   - `NODE_ENV=production`, `SCHEDULE_TIMEZONE=America/Vancouver`, `DELIVERY_REMINDERS=on`
+   - `DATABASE_URL` (Supabase pooled connection), `STORAGE_PROVIDER=supabase`,
+     `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
    - `AUTH_SECRET`: 48+ random characters. `ENCRYPTION_KEY`: 32 random bytes, base64
      (generate on your PC: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`).
      **Keep a copy of ENCRYPTION_KEY somewhere safe — stored AI keys can't be read without it.**
    - `APP_URL=https://app.<domain>`, `CORS_ORIGINS=https://app.<domain>`
-   - `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY`: run `pnpm --filter @supplyline/server push:keys`
-     on your PC with an empty `.env` copy, and paste the two values (one pair per environment).
-   - `CRON_SECRET` (optional): only if you use an outside scheduler for reminders.
-3. Copy each server's Deploy Hook URL into the GitHub environment secrets.
-4. Custom domains: `api.<domain>` → server, `app.<domain>` → web; Render issues the certificates.
-5. Web app setting: `NEXT_PUBLIC_API_URL=https://api.<domain>`.
-6. Later move to a Canadian host: the server is a standard Docker image (`server/Dockerfile`).
+   - Email: `EMAIL_PROVIDER` plus its key (`RESEND_API_KEY`, or the Gmail `SMTP_*` values), `EMAIL_FROM_ADDRESS`
+   - `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT`: run
+     `pnpm --filter @supplyline/server push:keys` on your PC and paste the pair.
+   - Later: `STRIPE_*`, `GOOGLE_CLIENT_ID`, `PLATFORM_ANTHROPIC_API_KEY` (optional fallback).
+6. **web** › Variables: `NEXT_PUBLIC_API_URL=https://api.<domain>` (used when the screens are built).
+7. Settings › Networking › Custom domain: `api.<domain>` → server, `app.<domain>` → web.
+   Railway shows a CNAME record to add at your domain registrar; HTTPS is automatic.
+8. Staging: Railway › Environments › New environment `staging` (branch `staging`), with its own
+   variables and its own Supabase database.
+9. Moving to a Canadian host later: the server is a standard Docker image (`server/Dockerfile`).
 
 ## 5. First sign-in
 1. Load your own organization into production once, from your PC: point `DATABASE_URL` at the
