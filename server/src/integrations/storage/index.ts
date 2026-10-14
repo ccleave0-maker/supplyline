@@ -37,6 +37,14 @@ export const localStorageProvider: StorageProvider = {
   },
 };
 
+/**
+ * Supabase key headers. New-style secret keys (sb_secret_...) go in the apikey header only;
+ * the older service_role JWT also goes as the Bearer token.
+ */
+function supabaseAuth(key: string): Record<string, string> {
+  return key.startsWith('sb_') ? { apikey: key } : { apikey: key, Authorization: `Bearer ${key}` };
+}
+
 /** Supabase Storage (default in production). Private bucket; the server streams files. */
 export const supabaseStorageProvider: StorageProvider = {
   kind: 'SUPABASE',
@@ -45,7 +53,7 @@ export const supabaseStorageProvider: StorageProvider = {
     const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${SUPABASE_STORAGE_BUCKET}/${encodeURI(key)}`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        ...supabaseAuth(SUPABASE_SERVICE_ROLE_KEY),
         'Content-Type': contentType,
         'x-upsert': 'true',
       },
@@ -57,7 +65,7 @@ export const supabaseStorageProvider: StorageProvider = {
   async get(key) {
     const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_STORAGE_BUCKET } = env();
     const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${SUPABASE_STORAGE_BUCKET}/${encodeURI(key)}`, {
-      headers: { Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
+      headers: { ...supabaseAuth(SUPABASE_SERVICE_ROLE_KEY) },
     });
     if (!res.ok) throw new Error(`Supabase download failed (${res.status})`);
     return new Uint8Array(await res.arrayBuffer());
@@ -66,7 +74,7 @@ export const supabaseStorageProvider: StorageProvider = {
     const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_STORAGE_BUCKET } = env();
     await fetch(`${SUPABASE_URL}/storage/v1/object/${SUPABASE_STORAGE_BUCKET}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json' },
+      headers: { ...supabaseAuth(SUPABASE_SERVICE_ROLE_KEY), 'Content-Type': 'application/json' },
       body: JSON.stringify({ prefixes: [key] }),
     });
   },

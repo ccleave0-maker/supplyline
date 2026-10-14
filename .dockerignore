@@ -1,0 +1,17 @@
+# Never put secrets or local data into an image.
+**/.env
+**/.env.*
+!**/.env.example
+server/prisma/private/*
+!server/prisma/private/*.example.json
+server/.storage
+server/backups
+# Rebuilt inside the image
+**/node_modules
+**/.next
+**/out
+**/dist
+apps/pc/src-tauri/target
+apps/ios/ios
+apps/android/android
+.git
