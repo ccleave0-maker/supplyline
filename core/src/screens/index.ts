@@ -37,7 +37,7 @@ export { FilingAdminScreen, ImportsScreen, ExportMappingsScreen, DataExportScree
 export { TrailersScreen, LoadBuilderScreen } from './loads';
 export { MeetingsScreen, MeetingRunScreen, ActionItemsScreen, MeetingTemplatesScreen } from './meetings';
 export { NotificationsScreen, SearchScreen, ActivityScreen, HealthScreen, ReportsScreen, AppearanceScreen, DashboardTiles, ActivityCard } from './polish';
-export { BillingScreen, ErrorsScreen, PushToggle, WelcomeScreen, PrivacyScreen, TermsScreen } from './golive';
+export { BillingScreen, ErrorsScreen, PushToggle, WelcomeScreen, PricingScreen, PrivacyScreen, TermsScreen } from './golive';
 export { AccessAdminScreen, MyMenuScreen } from './access';
 export { ShipViaScreen, SiteShipToCard } from './ship-via';
 export { LoadBoardScreen, OptimizerScreen } from './board';

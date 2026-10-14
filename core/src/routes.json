@@ -82,6 +82,7 @@
   {"path": "/account/billing", "screen": "BillingScreen"},
   {"path": "/platform/errors", "screen": "ErrorsScreen"},
   {"path": "/welcome", "screen": "WelcomeScreen"},
+  {"path": "/pricing", "screen": "PricingScreen"},
   {"path": "/legal/privacy", "screen": "PrivacyScreen"},
   {"path": "/legal/terms", "screen": "TermsScreen"},
   {"path": "/admin/access", "screen": "AccessAdminScreen"},

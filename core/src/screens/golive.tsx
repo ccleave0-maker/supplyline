@@ -264,6 +264,21 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
+export function PricingScreen() {
+  return (
+    <PublicPage title="Pricing">
+      <p className="text-ink">Plans and online sign-up are coming soon.</p>
+      <p className="mt-2 text-ink">
+        To start a subscription now, email{' '}
+        <a className="underline" href={`mailto:${BRANDING.supportEmail}?subject=${encodeURIComponent(`${BRANDING.productName} subscription`)}`}>
+          {BRANDING.supportEmail}
+        </a>
+        .
+      </p>
+    </PublicPage>
+  );
+}
+
 export function PrivacyScreen() {
   return (
     <PublicPage title="Privacy policy">

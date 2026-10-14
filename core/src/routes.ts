@@ -79,6 +79,7 @@ export const paths = {
   billing: () => '/account/billing/',
   platformErrors: () => '/platform/errors/',
   welcome: () => '/welcome/',
+  pricing: () => '/pricing/',
   privacy: () => '/legal/privacy/',
   terms: () => '/legal/terms/',
   search: (q?: string) => (q ? `/search/?q=${encodeURIComponent(q)}` : '/search/'),

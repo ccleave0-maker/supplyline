@@ -230,7 +230,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { side: allNav, bottom: bottomNav, groups: navGroups } = useNav();
   const isLogin = pathname === '/login';
   // Public pages (website, privacy, terms) open without signing in.
-  const isPublic = pathname === '/welcome' || pathname.startsWith('/legal');
+  const isPublic = pathname === '/welcome' || pathname.startsWith('/pricing') || pathname.startsWith('/legal');
 
   useTheme(activeCompany?.themeColor);
 

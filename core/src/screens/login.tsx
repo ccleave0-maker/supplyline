@@ -229,6 +229,9 @@ export function LoginScreen() {
           </form>
         )}
         <p className="mt-6 text-center text-sm text-muted">Access is by invitation. Ask your administrator if you need an account.</p>
+        <Link href={paths.pricing()} className="sl-btn mt-3 flex min-h-12 w-full items-center justify-center rounded-lg border border-line bg-surface px-4 font-semibold text-ink">
+          Pricing — start a subscription
+        </Link>
         <p className="mt-3 flex justify-center gap-4 text-sm text-muted">
           <Link href={paths.privacy()} className="underline">
             Privacy
