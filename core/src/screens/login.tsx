@@ -117,130 +117,217 @@ export function LoginScreen() {
   const company = branding?.company ?? null;
   const background = api.fileUrl(company?.loginBackgroundUrl);
 
+  const highlights = [
+    { title: 'Order to site, one thread', body: 'Order lists, POs, loads and receiving stay linked, so everyone sees the same truth.' },
+    { title: 'Chases itself', body: 'ETA reminders, supplier follow-ups and late-delivery alerts go out on their own.' },
+    { title: 'Built for the field', body: 'Scan, snap and sign on any phone, even with one bar of signal.' },
+  ];
+
   return (
-    <div className="sl-screen relative flex min-h-dvh items-center justify-center bg-brand">
-      {/* Background photo slot: upload one per company in Admin › Companies */}
-      {background ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={background} alt="" className="absolute inset-0 h-full w-full object-cover" />
-      ) : (
+    <div className="flex min-h-dvh bg-surface">
+      {/* Brand panel (larger screens). A company's own login photo shows through when one is uploaded. */}
+      <aside className="relative hidden w-[55%] overflow-hidden text-white lg:flex lg:flex-col" style={{ background: '#0b1220' }}>
+        {background ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={background} alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" />
+        ) : null}
         <div
           aria-hidden="true"
           className="absolute inset-0"
           style={{
-            backgroundImage:
-              'linear-gradient(160deg, rgba(0,0,0,0.05), rgba(0,0,0,0.45)), repeating-linear-gradient(45deg, rgba(255,255,255,0.06) 0 2px, transparent 2px 28px)',
+            backgroundImage: [
+              'radial-gradient(60% 50% at 15% 10%, color-mix(in srgb, var(--brand) 55%, transparent), transparent 70%)',
+              'radial-gradient(50% 45% at 90% 95%, color-mix(in srgb, var(--brand) 30%, transparent), transparent 70%)',
+              'linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px)',
+              'linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px)',
+            ].join(','),
+            backgroundSize: 'auto, auto, 44px 44px, 44px 44px',
           }}
         />
-      )}
-      <div aria-hidden="true" className="absolute inset-0 bg-black/35" />
+        <div aria-hidden="true" className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(11,18,32,0) 40%, rgba(11,18,32,0.85) 100%)' }} />
 
-      <main className="relative w-full max-w-sm rounded-2xl bg-surface p-6 shadow-2xl">
-        <ColorModeToggle className="absolute top-2 right-2" />
-        <div className="mb-6 flex flex-col items-center gap-3 text-center">
-          {company ? (
-            <CompanyMark name={company.name} code={company.code} logoUrl={api.fileUrl(company.logoUrl)} size={56} />
-          ) : null}
-          <h1 className="text-2xl font-black text-ink">{BRANDING.productName}</h1>
-          <p className="text-muted">{company ? company.name : BRANDING.tagline}</p>
+        <div className="relative flex flex-1 flex-col justify-between p-12 xl:p-16">
+          <div className="flex items-center gap-3">
+            {company ? (
+              <CompanyMark name={company.name} code={company.code} logoUrl={api.fileUrl(company.logoUrl)} size={40} />
+            ) : (
+              <span aria-hidden="true" className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-lg font-black text-brand-fg shadow-lg">
+                {BRANDING.productName.slice(0, 1)}
+              </span>
+            )}
+            <span className="text-xl font-black tracking-tight">{BRANDING.productName}</span>
+          </div>
+
+          <div className="max-w-2xl">
+            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-sm font-medium text-white/80 backdrop-blur">
+              <span aria-hidden="true" className="h-2 w-2 rounded-full bg-brand" /> Construction procurement
+            </p>
+            <h2 className="text-4xl leading-[1.1] font-black tracking-tight text-balance xl:text-[2.75rem]">
+              Every order, PO and load.
+              <br />
+              <span className="text-white/60">One line from yard to site.</span>
+            </h2>
+            <ul className="mt-10 flex max-w-xl flex-col gap-6">
+              {highlights.map((h) => (
+                <li key={h.title} className="flex gap-4">
+                  <span aria-hidden="true" className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/10 text-sm font-bold ring-1 ring-white/15">
+                    ✓
+                  </span>
+                  <span>
+                    <span className="block font-semibold">{h.title}</span>
+                    <span className="block text-white/65">{h.body}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <p className="text-sm text-white/45">
+            © {new Date().getFullYear()} {BRANDING.productName}
+          </p>
+        </div>
+      </aside>
+
+      {/* Sign-in */}
+      <div className="sl-screen relative flex flex-1 flex-col lg:border-l lg:border-line">
+        {/* Phones and tablets: a brand band in place of the side panel */}
+        <div aria-hidden="true" className="absolute inset-x-0 top-0 h-56 lg:hidden" style={{ background: 'radial-gradient(90% 100% at 20% 0%, color-mix(in srgb, var(--brand) 35%, transparent), transparent 75%)' }} />
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-2 lg:invisible">
+            {company ? (
+              <CompanyMark name={company.name} code={company.code} logoUrl={api.fileUrl(company.logoUrl)} size={32} />
+            ) : (
+              <span aria-hidden="true" className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand font-black text-brand-fg">
+                {BRANDING.productName.slice(0, 1)}
+              </span>
+            )}
+            <span className="font-black tracking-tight text-ink">{BRANDING.productName}</span>
+          </div>
+          <ColorModeToggle />
         </div>
 
-        <ErrorBanner error={step === 'email' ? send.error : verify.error ?? google.error} />
-
-        {step === 'email' ? (
-          <form
-            className="flex flex-col gap-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void send.run();
-            }}
-          >
-            <TextField
-              label="Email"
-              type="email"
-              inputMode="email"
-              autoComplete="email"
-              autoCapitalize="none"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              error={fieldError(send.error, 'email')}
-              hint="We'll email you a 6-digit sign-in code."
-            />
-            <Button type="submit" busy={send.busy} className="w-full">
-              Email me a code
-            </Button>
-            {branding?.googleClientId && platform.info.app === 'web' && (
+        <main className="relative mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
+          <h1 className="text-3xl font-black tracking-tight text-ink">{step === 'email' ? 'Welcome back' : 'Check your email'}</h1>
+          <p className="mt-2 mb-8 text-muted">
+            {step === 'email' ? (company ? `Sign in to ${company.name}.` : 'Sign in with your work email. No password needed.') : (
               <>
-                <div className="flex items-center gap-3 text-sm text-muted" aria-hidden="true">
-                  <span className="h-px flex-1 bg-line" /> or <span className="h-px flex-1 bg-line" />
-                </div>
-                <GoogleButton clientId={branding.googleClientId} onToken={(t) => void google.run(t)} />
+                If <strong className="break-all text-ink">{email}</strong> has access, a 6-digit code is on its way. It expires in 10 minutes.
               </>
             )}
-          </form>
-        ) : (
-          <form
-            className="flex flex-col gap-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void verify.run();
-            }}
-          >
-            <p className="text-ink">
-              If <strong className="break-all">{email}</strong> has access, a code is on its way. It expires in 10 minutes.
-            </p>
-            {devCode && (
-              <p className="rounded-lg bg-warn-bg p-3 text-warn-ink">
-                Development mode — your code is <strong className="tracking-widest">{devCode}</strong>
-              </p>
-            )}
-            <TextField
-              ref={codeRef}
-              label="6-digit code"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              pattern="\d{6}"
-              maxLength={6}
-              required
-              value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-              error={fieldError(verify.error, 'code')}
-              className="text-center text-2xl tracking-[0.5em]"
-            />
-            <Button type="submit" busy={verify.busy} className="w-full">
-              Sign in
-            </Button>
-            <Button type="button" variant="secondary" busy={send.busy} onClick={() => void send.run()}>
-              Send a new code
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => {
-                void platform.prefs.remove(PENDING_KEY);
-                setStep('email');
-                setCode('');
-                verify.setError(null);
+          </p>
+
+          <ErrorBanner error={step === 'email' ? send.error : verify.error ?? google.error} />
+
+          {step === 'email' ? (
+            <form
+              className="flex flex-col gap-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void send.run();
               }}
             >
-              Use a different email
-            </Button>
-          </form>
-        )}
-        <p className="mt-6 text-center text-sm text-muted">Access is by invitation. Ask your administrator if you need an account.</p>
-        <Link href={paths.pricing()} className="sl-btn mt-3 flex min-h-12 w-full items-center justify-center rounded-lg border border-line bg-surface px-4 font-semibold text-ink">
-          Pricing — start a subscription
-        </Link>
-        <p className="mt-3 flex justify-center gap-4 text-sm text-muted">
-          <Link href={paths.privacy()} className="underline">
+              <TextField
+                label="Work email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                autoCapitalize="none"
+                placeholder="you@company.com"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                error={fieldError(send.error, 'email')}
+              />
+              <Button type="submit" busy={send.busy} className="w-full shadow-lg shadow-black/10">
+                Continue with email →
+              </Button>
+              {branding?.googleClientId && platform.info.app === 'web' && (
+                <>
+                  <div className="flex items-center gap-3 text-sm text-muted" aria-hidden="true">
+                    <span className="h-px flex-1 bg-line" /> or <span className="h-px flex-1 bg-line" />
+                  </div>
+                  <GoogleButton clientId={branding.googleClientId} onToken={(t) => void google.run(t)} />
+                </>
+              )}
+            </form>
+          ) : (
+            <form
+              className="flex flex-col gap-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void verify.run();
+              }}
+            >
+              {devCode && (
+                <p className="rounded-lg bg-warn-bg p-3 text-warn-ink">
+                  Development mode — your code is <strong className="tracking-widest">{devCode}</strong>
+                </p>
+              )}
+              <TextField
+                ref={codeRef}
+                label="6-digit code"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                pattern="\d{6}"
+                maxLength={6}
+                required
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+                error={fieldError(verify.error, 'code')}
+                className="text-center text-2xl tracking-[0.5em]"
+              />
+              <Button type="submit" busy={verify.busy} className="w-full shadow-lg shadow-black/10">
+                Sign in
+              </Button>
+              <div className="flex gap-2">
+                <Button type="button" variant="secondary" busy={send.busy} className="flex-1" onClick={() => void send.run()}>
+                  Send a new code
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="flex-1"
+                  onClick={() => {
+                    void platform.prefs.remove(PENDING_KEY);
+                    setStep('email');
+                    setCode('');
+                    verify.setError(null);
+                  }}
+                >
+                  Different email
+                </Button>
+              </div>
+            </form>
+          )}
+
+          <p className="mt-8 text-sm text-muted">Access is by invitation. Ask your administrator if you need an account.</p>
+
+          <Link
+            href={paths.pricing()}
+            className="sl-btn group mt-6 flex items-center justify-between gap-4 rounded-xl border border-line bg-surface-2 p-4 text-ink"
+          >
+            <span>
+              <span className="block font-semibold">New to {BRANDING.productName}?</span>
+              <span className="block text-sm text-muted">See pricing and start a subscription</span>
+            </span>
+            <span aria-hidden="true" className="text-xl text-brand-ink transition-transform group-hover:translate-x-1">
+              →
+            </span>
+          </Link>
+        </main>
+
+        <footer className="relative flex justify-center gap-6 text-sm text-muted">
+          <Link href={paths.privacy()} className="hover:text-ink">
             Privacy
           </Link>
-          <Link href={paths.terms()} className="underline">
+          <Link href={paths.terms()} className="hover:text-ink">
             Terms
           </Link>
-        </p>
-      </main>
+          <span className="lg:hidden">
+            © {new Date().getFullYear()} {BRANDING.productName}
+          </span>
+        </footer>
+      </div>
     </div>
   );
 }
