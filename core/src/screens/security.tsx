@@ -176,7 +176,7 @@ export function SecurityAdminScreen() {
       <Card title="Two-step sign-in (authenticator app)">
         <p className="text-sm text-muted">People with these roles must use an authenticator app. Admins always must. Anyone else can turn it on from their Account page.</p>
         {ROLES.map((r) => (
-          <Checkbox key={r} label={ROLE_LABELS[r]} checked={v.mfaEveryone || v.mfaRequiredRoles.includes(r)} disabled={v.mfaEveryone || r === 'ADMIN'} onChange={(on) => set({ mfaRequiredRoles: on ? [...v.mfaRequiredRoles, r] : v.mfaRequiredRoles.filter((x) => x !== r) })} />
+          <Checkbox key={r} label={ROLE_LABELS[r]} checked={v.mfaEveryone || v.mfaRequiredRoles.includes(r)} disabled={v.mfaEveryone} onChange={(on) => set({ mfaRequiredRoles: on ? [...v.mfaRequiredRoles, r] : v.mfaRequiredRoles.filter((x) => x !== r) })} />
         ))}
         <Checkbox label="Require it for everyone" checked={v.mfaEveryone} onChange={(mfaEveryone) => set({ mfaEveryone })} />
         <Checkbox label="Email admins about security events" description="New admins, two-step turned off or reset, too many wrong codes, full data exports, security changes." checked={v.alertAdmins} onChange={(alertAdmins) => set({ alertAdmins })} />

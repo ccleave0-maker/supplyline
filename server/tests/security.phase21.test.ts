@@ -35,9 +35,10 @@ describe('authenticator codes (TOTP)', () => {
 });
 
 describe('two-step sign-in', () => {
-  it('admins must set it up before using the app; then each new session needs a code', async () => {
+  it('when required for admins, they must set it up first; then each new session needs a code', async () => {
     const o = await makeOrg();
     const { auth, user } = await makeUser(o.org.id, ['ADMIN'], null);
+    await saveSecuritySettings(auth, { ...DEFAULT_SECURITY, mfaRequiredRoles: ['ADMIN'] });
     const s1 = await sessionFor(user.id);
     const a1 = await authenticate(s1.req());
     expect(a1.mfaPending).toBe('setup');
@@ -93,13 +94,20 @@ describe('two-step sign-in', () => {
     await expect(authenticate(s2.req())).rejects.toThrow();
   });
 
-  it('site users are not required unless the admin requires everyone; admins stay required', async () => {
+  it('optional by default (each person can turn it on and off); admins can require it', async () => {
     const o = await makeOrg();
-    const { auth: admin } = await makeUser(o.org.id, ['ADMIN'], null);
+    const { auth: admin, user: adminUser } = await makeUser(o.org.id, ['ADMIN'], null);
     const { user } = await makeUser(o.org.id, ['SITE'], o.a.id, [o.jobA.id]);
     const s = await sessionFor(user.id);
     expect((await authenticate(s.req())).mfaPending).toBeNull();
-    await expect(saveSecuritySettings(admin, { ...DEFAULT_SECURITY, mfaRequiredRoles: ['PROCUREMENT'] })).rejects.toThrow(/Admins must/);
+    // Not forced on admins either, and they can switch it on, then off again, themselves.
+    const as = await sessionFor(adminUser.id);
+    expect((await authenticate(as.req())).mfaPending).toBeNull();
+    const a = { ...admin, sessionId: as.sessionId };
+    const { secret } = await startMfaSetup(a);
+    await enableMfa(a, totpAt(secret, stepAt()));
+    await disableMfa(a, totpAt(secret, stepAt() + 1));
+    expect((await db.user.findUniqueOrThrow({ where: { id: adminUser.id } })).mfaEnabledAt).toBeNull();
     await saveSecuritySettings(admin, { ...DEFAULT_SECURITY, mfaEveryone: true });
     expect((await authenticate(s.req())).mfaPending).toBe('setup');
   });

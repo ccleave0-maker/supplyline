@@ -13,11 +13,12 @@ export const securitySettingsInput = z.object({
   alertAdmins: z.boolean(),
 });
 export type SecuritySettings = z.infer<typeof securitySettingsInput>;
-export const DEFAULT_SECURITY: SecuritySettings = { mfaRequiredRoles: ['ADMIN', 'PROCUREMENT'], mfaEveryone: false, alertAdmins: true };
+export const DEFAULT_SECURITY: SecuritySettings = { mfaRequiredRoles: [], mfaEveryone: false, alertAdmins: true };
 
 /** Is the authenticator app required for someone with these roles? */
-export function mfaRequiredFor(s: SecuritySettings, roles: Role[], isPlatformOwner = false): boolean {
-  return s.mfaEveryone || isPlatformOwner || roles.some((r) => s.mfaRequiredRoles.includes(r));
+// Optional by default: each person turns it on or off for themselves, unless an admin requires it.
+export function mfaRequiredFor(s: SecuritySettings, roles: Role[], _isPlatformOwner = false): boolean {
+  return s.mfaEveryone || roles.some((r) => s.mfaRequiredRoles.includes(r));
 }
 
 export interface MfaStatus {

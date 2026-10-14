@@ -30,7 +30,6 @@ export async function getSecuritySettings(auth: AuthContext) {
 
 export async function saveSecuritySettings(auth: AuthContext, input: SecuritySettings) {
   requirePermission(auth, 'org:manage');
-  if (!input.mfaEveryone && !input.mfaRequiredRoles.includes('ADMIN')) throw badRequest('Admins must always use an authenticator app.');
   const o = await db.organization.findUniqueOrThrow({ where: { id: auth.orgId }, select: { settings: true } });
   const before = securityOf(o.settings);
   await db.organization.update({ where: { id: auth.orgId }, data: { settings: { ...((o.settings as Record<string, unknown>) ?? {}), security: input } as Prisma.InputJsonValue } });
