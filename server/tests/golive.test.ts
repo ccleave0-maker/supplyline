@@ -37,7 +37,7 @@ describe('subscriptions', () => {
     expect(b).toMatchObject({ plan: 'TRIAL', trialDaysLeft: 3, seatsUsed: 2, onlinePayments: false, plans: [], canManage: false });
     await expect(getBilling(site)).rejects.toThrow(/permission|access/i);
     await expect(startCheckout(admin, 'STANDARD', 5)).rejects.toThrow(/aren’t set up/);
-    expect((await buildMe(user.id)).billingNotice).toBe('Your SupplyLine trial ends in 3 days. Choose a plan under Account › Billing.');
+    expect((await buildMe(user.id)).billingNotice).toBe('Your Bowron trial ends in 3 days. Choose a plan under Account › Billing.');
     expect(billingNotice({ plan: 'TRIAL', trialEndsAt: new Date(Date.now() - 86_400_000), billingStatus: 'NONE' })).toMatch(/has ended/);
     expect(billingNotice({ plan: 'FREE', trialEndsAt: null, billingStatus: 'NONE' })).toBeNull();
   });
@@ -124,7 +124,7 @@ describe('PC app updates', () => {
     const o = await makeOrg();
     const { auth: owner } = await makeUser(o.org.id, ['ADMIN'], null, [], { owner: true });
     const { auth: admin } = await makeUser(o.org.id, ['ADMIN'], null);
-    const exe = new File([new Uint8Array([77, 90, 1, 2, 3])], 'SupplyLine_9.0.0_x64-setup.exe', { type: 'application/x-msdownload' });
+    const exe = new File([new Uint8Array([77, 90, 1, 2, 3])], 'Bowron_9.0.0_x64-setup.exe', { type: 'application/x-msdownload' });
     const sig = 'dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTV...';
     await expect(publishDesktopRelease(admin, { version: '9.0.0', notes: '' }, exe, sig)).rejects.toThrow(/permission|access/i);
     await expect(publishDesktopRelease(owner, { version: 'nine', notes: '' }, exe, sig)).rejects.toThrow(/0\.2\.0/);

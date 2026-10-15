@@ -1,4 +1,4 @@
-// SupplyLine database schema
+// Bowron database schema
 //
 // Tenancy: Platform owner â†’ Organization â†’ Company â†’ Jobs.
 // Yards belong to the Organization and serve one or more companies (YardCompany).
@@ -1286,7 +1286,7 @@ model MailboxConnection {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// Every email SupplyLine sends, for retries and audit
+// Every email Bowron sends, for retries and audit
 model EmailOutbox {
   id                String      @id @default(cuid())
   organizationId    String?
@@ -1559,7 +1559,7 @@ model EmailTemplate {
 model SiteNotifyRule {
   id        String   @id @default(cuid())
   siteId    String
-  /// A person in SupplyLine…
+  /// A person in Bowron…
   userId    String?
   /// …or anyone else, by email
   email     String?
@@ -1806,7 +1806,7 @@ model FilingJob {
   @@index([organizationId, status])
 }
 
-/// A SupplyLine Sync app installed on a PC on the customer's network.
+/// A Bowron Sync app installed on a PC on the customer's network.
 model SyncDevice {
   id             String    @id @default(cuid())
   organizationId String

@@ -2,7 +2,7 @@
   "name": "supplyline",
   "private": true,
   "version": "0.1.0",
-  "description": "SupplyLine — centralized construction procurement",
+  "description": "Bowron — centralized construction procurement",
   "packageManager": "pnpm@12.11.2",
   "engines": {
     "node": ">=22"

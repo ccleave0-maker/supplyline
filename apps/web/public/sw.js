@@ -42,9 +42,9 @@ self.addEventListener('push', (event) => {
   try {
     data = event.data ? event.data.json() : {};
   } catch {
-    data = { title: 'SupplyLine', body: event.data ? event.data.text() : '' };
+    data = { title: 'Bowron', body: event.data ? event.data.text() : '' };
   }
-  const title = data.title || 'SupplyLine';
+  const title = data.title || 'Bowron';
   event.waitUntil(
     Promise.all([
       self.registration.showNotification(title, { body: data.body || '', tag: data.tag, icon: '/icon-192.png', badge: '/icon-192.png', data: { link: data.link || '/notifications/' } }),

@@ -25,7 +25,7 @@ export const tableExportInput = z.object({
 export type TableExportInput = z.infer<typeof tableExportInput>;
 export type ExportColumn = TableExportInput['columns'][number];
 
-/** What a scanned SupplyLine QR (or printed number) points at, and where to go. */
+/** What a scanned Bowron QR (or printed number) points at, and where to go. */
 export interface ScanTarget {
   kind: 'BOL' | 'PO' | 'ORDER' | 'EQUIPMENT' | 'RECEIPT' | 'MEETING';
   id: string;

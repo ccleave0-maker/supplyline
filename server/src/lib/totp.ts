@@ -62,6 +62,6 @@ export function verifyTotp(secret: string, code: string, ms = Date.now()): numbe
   return null;
 }
 
-export function otpauthUri(secret: string, account: string, issuer = 'SupplyLine') {
+export function otpauthUri(secret: string, account: string, issuer = 'Bowron') {
   return `otpauth://totp/${encodeURIComponent(`${issuer}:${account}`)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}&algorithm=SHA1&digits=6&period=${STEP}`;
 }

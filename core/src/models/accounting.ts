@@ -208,7 +208,7 @@ export type ApActionInput = z.infer<typeof apActionInput>;
 export const apRejectionSendInput = z.object({
   /** Address to send to (defaults to the vendor's AP contact) */
   to: emailSchema.nullable().optional(),
-  /** Sent on paper / handled outside SupplyLine */
+  /** Sent on paper / handled outside Bowron */
   handledManually: z.boolean().optional(),
 });
 
@@ -336,7 +336,7 @@ export interface ArInvoiceDetail extends ArInvoiceSummary {
   sentAt: string | null;
   /** Backup documents (filed to the network folder set in Admin › Network filing) */
   backups: { id: string; fileName: string; url: string; sizeBytes: number }[];
-  /** Where backup documents are filed, e.g. "P:\SupplyLine\FCP\AR\2026\INV-104 backup" (null when filing is off) */
+  /** Where backup documents are filed, e.g. "P:\Bowron\FCP\AR\2026\INV-104 backup" (null when filing is off) */
   backupFolder: string | null;
 }
 export const arPaymentInput = z.object({

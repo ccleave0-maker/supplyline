@@ -301,7 +301,7 @@ export function VoiceNavButton({ destinations }: { destinations: { path: string;
           }
           onText={async (t) => {
             const fields = scanScreenFields();
-            const r = await api.ai.navigate(t, destinations, fields.length ? { title: document.title || 'SupplyLine', path: window.location.pathname + window.location.search, fields } : null);
+            const r = await api.ai.navigate(t, destinations, fields.length ? { title: document.title || 'Bowron', path: window.location.pathname + window.location.search, fields } : null);
             setResult(r);
             if (Object.keys(r.set).length) undo.current = applyScreenFields(r.set);
             if (r.navigate) {

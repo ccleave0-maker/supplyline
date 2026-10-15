@@ -1,4 +1,4 @@
-/* SupplyLine design tokens. --brand* are set at runtime from the active company's theme. */
+/* Bowron design tokens. --brand* are set at runtime from the active company's theme. */
 :root {
   --brand: #1f4e79;
   --brand-contrast: #ffffff;

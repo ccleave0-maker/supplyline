@@ -33,7 +33,7 @@ function MeetingDoc({ d }: { d: MeetingPdfData }) {
   const present = d.attendees.filter((a) => a.present).map((a) => a.name);
   const absent = d.attendees.filter((a) => !a.present).map((a) => a.name);
   return (
-    <Document title={`Minutes – ${d.title}`} author={d.companyName} creator="SupplyLine">
+    <Document title={`Minutes – ${d.title}`} author={d.companyName} creator="Bowron">
       <Page size="LETTER" style={s.page}>
         <View style={s.header}>
           <View>
@@ -97,7 +97,7 @@ function MeetingDoc({ d }: { d: MeetingPdfData }) {
           </>
         )}
         <View style={s.footer} fixed>
-          <Text>{d.companyName} · SupplyLine</Text>
+          <Text>{d.companyName} · Bowron</Text>
           <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
         </View>
       </Page>

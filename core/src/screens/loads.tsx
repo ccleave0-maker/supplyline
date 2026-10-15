@@ -301,7 +301,7 @@ export function LoadBuilderScreen() {
     <div className="flex flex-col gap-4">
       <PageHeader
         title="Load builder"
-        subtitle="Pick the material and a trailer: SupplyLine works out how many loads, what goes on each, and what’s oversize or overweight. Approximate — the driver has the final say."
+        subtitle="Pick the material and a trailer: Bowron works out how many loads, what goes on each, and what’s oversize or overweight. Approximate — the driver has the final say."
         actions={
           <div className="flex flex-wrap gap-2">
             <UnitToggle units={units} setUnits={setUnits} />

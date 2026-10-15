@@ -71,7 +71,7 @@ export function AssistantButton() {
     const said = t.trim();
     if (!said) return;
     setText('');
-    const r = await api.assistant.ask({ conversationId: convoId, text: said, screen: { path: window.location.pathname + window.location.search, title: document.title || 'SupplyLine' } });
+    const r = await api.assistant.ask({ conversationId: convoId, text: said, screen: { path: window.location.pathname + window.location.search, title: document.title || 'Bowron' } });
     setConvoId(r.conversationId);
     setMessages((m) => [...m, ...r.messages]);
     if (r.navigate) router.push(r.navigate);

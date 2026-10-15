@@ -2,7 +2,7 @@
 // folder are brought in (read, matched, sent to approval) and the file moves to
 // "In review", then "Approved" / "Rejected" / "On hold" as the invoice does.
 // Works for any folder the server can reach (a mapped drive or \\server\share).
-// When SupplyLine is hosted online, the Sync app does the same job on your network.
+// When Bowron is hosted online, the Sync app does the same job on your network.
 
 import { createHash } from 'node:crypto';
 import { promises as fs } from 'node:fs';

@@ -46,7 +46,7 @@ async function stripe(path: string, params: Record<string, string>) {
 /** A Stripe Checkout page to subscribe (returns the page to open). */
 export async function startCheckout(auth: AuthContext, plan: 'STANDARD' | 'PRO', seats: number): Promise<{ url: string }> {
   requirePermission(auth, 'org:manage');
-  if (!stripeOn()) throw conflict('Online payments aren’t set up yet. Contact SupplyLine to subscribe.');
+  if (!stripeOn()) throw conflict('Online payments aren’t set up yet. Contact Bowron to subscribe.');
   const price = priceFor(plan);
   if (!price) throw badRequest('That plan isn’t available online.');
   const o = await db.organization.findUniqueOrThrow({ where: { id: auth.orgId } });

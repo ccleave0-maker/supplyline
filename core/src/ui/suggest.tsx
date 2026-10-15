@@ -36,7 +36,7 @@ export function ItemList({ id, items }: { id: string; items: ItemSuggestion[] })
   );
 }
 
-/** Tell SupplyLine a suggestion was kept (or changed) so it gets better. Never blocks. */
+/** Tell Bowron a suggestion was kept (or changed) so it gets better. Never blocks. */
 export function useSuggestionFeedback() {
   const { api } = useAuthed();
   return (f: Parameters<typeof api.suggestions.feedback>[0]) => void api.suggestions.feedback(f).catch(() => undefined);

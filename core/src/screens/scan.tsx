@@ -8,7 +8,7 @@ import { useAction } from '../ui/hooks';
 import { useAuthed } from '../ui/session';
 import { paths } from '../routes';
 
-/** One Scan button for every SupplyLine QR code: BOLs, POs / packing lists, order lists, equipment tags. */
+/** One Scan button for every Bowron QR code: BOLs, POs / packing lists, order lists, equipment tags. */
 export function ScanScreen() {
   const router = useRouter();
   const platform = usePlatform();
@@ -24,8 +24,8 @@ export function ScanScreen() {
     if (r.target) return router.push(r.target.link);
     setNote(
       r.textSample
-        ? `No SupplyLine code found. It read: “${r.textSample.slice(0, 140)}…” Try again closer, or type the number below.`
-        : 'No SupplyLine code found. Try again closer with good light, or type the number below.',
+        ? `No Bowron code found. It read: “${r.textSample.slice(0, 140)}…” Try again closer, or type the number below.`
+        : 'No Bowron code found. Try again closer with good light, or type the number below.',
     );
   });
 

@@ -151,7 +151,7 @@ export function InsightsScreen() {
           </Card>
         ))}
       </div>
-      <Notice>Learning across other companies that use SupplyLine is off, and stays off until the privacy policy and terms cover it. Nothing here uses anyone else’s data.</Notice>
+      <Notice>Learning across other companies that use Bowron is off, and stays off until the privacy policy and terms cover it. Nothing here uses anyone else’s data.</Notice>
     </div>
   );
 }

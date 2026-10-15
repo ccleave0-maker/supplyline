@@ -166,7 +166,7 @@ export async function shipDirectFromPo(auth: AuthContext, poId: string): Promise
 }
 
 // ---------------------------------------------------------------------------
-// The PO on SupplyLine's own load board (when the vendor isn't arranging shipping)
+// The PO on Bowron's own load board (when the vendor isn't arranging shipping)
 // ---------------------------------------------------------------------------
 /** Where the PO's material goes: its delivery yard, else the job's ship-to (or the job). */
 async function destinationOf(po: { deliverToYardId: string | null; shipToLocationId: string | null; siteId: string | null }) {

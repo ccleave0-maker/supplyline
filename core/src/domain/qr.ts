@@ -1,4 +1,4 @@
-// QR codes printed on SupplyLine paperwork. Scanning one opens the right screen.
+// QR codes printed on Bowron paperwork. Scanning one opens the right screen.
 // BOLs keep their original "SUPPLYLINE-BOL:<id>:<number>" form.
 
 export type QrKind = 'BOL' | 'PO' | 'ORDER' | 'EQUIPMENT' | 'RECEIPT' | 'MEETING';

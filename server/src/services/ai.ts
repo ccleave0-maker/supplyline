@@ -346,7 +346,7 @@ async function capAlerts(orgId: string, platform: boolean) {
       {
         fromName: env().EMAIL_FROM_NAME,
         to: admins.map((a) => a.email),
-        subject: `SupplyLine AI spending: ${level}% of this month's cap`,
+        subject: `Bowron AI spending: ${level}% of this month's cap`,
         text: `Voice AI and document reading have used ${used.toFixed(2)} CAD of the ${cap.toFixed(2)} CAD monthly cap${platform ? ' on the shared key' : ''}.${level === 100 ? '\n\nAI is paused until next month or until the cap is raised (Admin › AI).' : ''}`,
       },
       { organizationId: orgId, relatedType: 'ai_cap' },
@@ -423,7 +423,7 @@ export async function voiceFill(auth: AuthContext, input: VoiceFillInput): Promi
   const describe = (f: { key: string; label: string; type: string; options?: { value: string; label: string }[]; hint?: string }) =>
     `- ${f.key} (${f.label}; ${f.type}${f.options ? `; one of: ${f.options.slice(0, 80).map((o) => (o.value === o.label ? o.value : `${o.value}=${o.label}`)).join(', ')}` : ''}${f.hint ? `; ${f.hint}` : ''})`;
   const system = [
-    'You fill in a form in SupplyLine, a construction materials and procurement app, from what a person said (speech-to-text, so expect mis-heard words).',
+    'You fill in a form in Bowron, a construction materials and procurement app, from what a person said (speech-to-text, so expect mis-heard words).',
     'Rules: only change what the person asked for; never invent quantities, prices or items they did not say; keep existing values otherwise.',
     'Quantities are numbers; use the units of measure listed; match items to past items and cost codes when they clearly mean them (e.g. "20 mil rebar" = "20M rebar").',
     'Dates are YYYY-MM-DD (resolve "tomorrow", "next Friday" from today). For choice fields use the given values exactly.',
@@ -493,7 +493,7 @@ export async function voiceNavigate(auth: AuthContext, transcript: string, desti
     .join('\n\n');
   const r = await callAi(auth, 'navigate', {
     system:
-      'You help someone use the SupplyLine app by voice. Either (a) they are giving information for the fields on the screen they are on — fill those fields ("set", path null), or (b) they want another screen — give its path ("set" empty). ' +
+      'You help someone use the Bowron app by voice. Either (a) they are giving information for the fields on the screen they are on — fill those fields ("set", path null), or (b) they want another screen — give its path ("set" empty). ' +
       'Speech-to-text mishears words; match choices by meaning (job nicknames, partial names). For choice fields use the exact value. Dates are YYYY-MM-DD. Never invent values the person did not say. Nothing is saved — the person reviews it.',
     content: [{ type: 'text', text: user }],
     tool,

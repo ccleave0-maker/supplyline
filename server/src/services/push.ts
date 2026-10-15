@@ -1,5 +1,5 @@
 // Push notifications (Web Push): the web app / installed web app on phones and
-// PCs can show SupplyLine notifications even when it's closed. Needs no outside
+// PCs can show Bowron notifications even when it's closed. Needs no outside
 // account — just a key pair in the server settings (VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY).
 // Native iPhone / Android push (APNs / Firebase) plugs in here later.
 

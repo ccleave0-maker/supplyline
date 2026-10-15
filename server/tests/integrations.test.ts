@@ -69,10 +69,10 @@ describe('network filing', () => {
   });
 });
 
-describe('SupplyLine Sync app', () => {
+describe('Bowron Sync app', () => {
   it('a device key collects SYNC-mode files and acknowledges them; a removed key stops working', async () => {
     const s = await setup();
-    await saveFilingSettings(s.admin, s.a.id, { ...DEFAULT_FILING, enabled: true, mode: 'SYNC', root: 'P:\\SupplyLine' });
+    await saveFilingSettings(s.admin, s.a.id, { ...DEFAULT_FILING, enabled: true, mode: 'SYNC', root: 'P:\\Bowron' });
     const { id, token } = await createSyncDevice(s.admin, 'Office PC');
     expect(token).toMatch(/^sls_/);
     const req = (t: string) => new Request('http://x/api/v1/sync/jobs', { headers: { authorization: `Bearer ${t}`, 'x-sync-version': 'sync-1.0.0' } });
@@ -81,7 +81,7 @@ describe('SupplyLine Sync app', () => {
     expect(d?.organizationId).toBe(s.org.id);
 
     const cfg = await syncConfig(s.org.id);
-    expect(cfg.companies.find((c) => c.id === s.a.id)!.filing).toEqual({ root: 'P:\\SupplyLine' });
+    expect(cfg.companies.find((c) => c.id === s.a.id)!.filing).toEqual({ root: 'P:\\Bowron' });
     expect(cfg.companies.find((c) => c.id === s.b.id)!.filing).toBeNull();
 
     await issue(s);
@@ -100,7 +100,7 @@ describe('SupplyLine Sync app', () => {
 
   it('brings in AP invoices from the inbox and tells the app where to move each file', async () => {
     const s = await setup();
-    await saveFilingSettings(s.admin, s.a.id, { ...DEFAULT_FILING, enabled: false, mode: 'SYNC', root: 'P:\\SupplyLine' });
+    await saveFilingSettings(s.admin, s.a.id, { ...DEFAULT_FILING, enabled: false, mode: 'SYNC', root: 'P:\\Bowron' });
     await saveAccountingSettings(s.admin, s.a.id, { ...DEFAULT_ACCOUNTING, folders: { inbox: 'P:\\AP\\Inbox', inReview: 'P:\\AP\\In review', approved: 'P:\\AP\\Approved', rejected: 'P:\\AP\\Rejected', held: 'P:\\AP\\Held' } });
     await saveAiSettings(s.admin, { enabled: true, model: 'claude-sonnet-5-5', apiKey: 'sk-ant-api03-test-key-abcdefghijklmnopqrstuvwxyz1234', monthlyCapCad: null, usdToCad: 1.37, priceInputUsdPerM: 3, priceOutputUsdPerM: 15, sttProvider: 'none' });
     const read: InvoiceScanResult = { documentType: 'INVOICE', refInvoiceNumber: null, vendorName: 'Nobody We Know', invoiceNumber: `INV-${uid()}`, invoiceDate: '2026-10-01', dueDate: null, poNumber: null, subtotal: 100, gst: 5, pst: 7, total: 112, lines: [] };
@@ -209,7 +209,7 @@ describe('export mappings and data export', () => {
     await createSyncDevice(s.admin, 'Office PC');
     await issue(s);
     const { bytes, fileName } = await exportAllData(s.admin, { includeFiles: true });
-    expect(fileName).toMatch(/^SupplyLine-export-.+\.zip$/);
+    expect(fileName).toMatch(/^Bowron-export-.+\.zip$/);
     const zip = await JSZip.loadAsync(bytes);
     const companies = JSON.parse(await zip.file('data/company.json')!.async('string'));
     expect(companies.map((c: { code: string }) => c.code).sort()).toEqual(['AAA', 'BBB']);

@@ -24,7 +24,7 @@ export async function geocode(query: string): Promise<GeocodeResult[]> {
   url.searchParams.set('countrycodes', 'ca,us');
   url.searchParams.set('email', env().GEOCODER_CONTACT_EMAIL);
 
-  const res = await fetch(url, { headers: { 'User-Agent': 'SupplyLine/0.1 (procurement app)' } });
+  const res = await fetch(url, { headers: { 'User-Agent': 'Bowron/0.1 (procurement app)' } });
   if (!res.ok) throw new Error(`Geocoder error ${res.status}`);
   const items = (await res.json()) as NominatimItem[];
 

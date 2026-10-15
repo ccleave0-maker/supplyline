@@ -26,7 +26,7 @@ function MfaSetupSteps({ onDone }: { onDone: () => void | Promise<void> }) {
         </p>
         <pre className="rounded-lg bg-surface-2 p-3 font-mono text-ink">{recovery.join('\n')}</pre>
         <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" onClick={() => void platform.files.saveFile('SupplyLine-recovery-codes.txt', new Blob([`SupplyLine recovery codes\n\n${recovery.join('\n')}\n`], { type: 'text/plain' }))}>
+          <Button variant="secondary" onClick={() => void platform.files.saveFile('Bowron-recovery-codes.txt', new Blob([`Bowron recovery codes\n\n${recovery.join('\n')}\n`], { type: 'text/plain' }))}>
             Save as a file
           </Button>
           <Button onClick={() => void onDone()}>I’ve saved them — continue</Button>

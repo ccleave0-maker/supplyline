@@ -1,6 +1,6 @@
 // Database backup: a full pg_dump to a dated file, keeping the newest 14.
 //   pnpm --filter @supplyline/server backup            (uses DATABASE_URL from .env)
-//   BACKUP_DIR="D:\SupplyLine backups" pnpm ... backup  (somewhere else, e.g. a network drive)
+//   BACKUP_DIR="D:\Bowron backups" pnpm ... backup  (somewhere else, e.g. a network drive)
 // Hosted databases (Supabase) also keep their own daily backups; this is an extra
 // copy you hold yourself. Needs pg_dump (installed with PostgreSQL).
 import { spawnSync } from 'node:child_process';

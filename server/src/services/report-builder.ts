@@ -1,4 +1,4 @@
-// Custom reports: sections from any data in SupplyLine (one job or all), the
+// Custom reports: sections from any data in Bowron (one job or all), the
 // fields you pick, as Excel or PDF — saved, and sent on a schedule if you like.
 // Also: export mappings on a schedule (e.g. Sage every week) and the Sunday
 // update to each job's project manager.
@@ -226,7 +226,7 @@ export async function renderReport(auth: AuthContext, input: SavedReportInput): 
     return { bytes: await out.save(), fileName: `${base}.pdf`, contentType: 'application/pdf', rows };
   }
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'SupplyLine';
+  wb.creator = 'Bowron';
   for (const [i, s] of r.sections.entries()) {
     const ws = wb.addWorksheet(`${i + 1} ${s.title}`.replace(/[\\/?*[\]:]/g, ' ').slice(0, 31));
     ws.addRow([`${input.name} — ${s.title}`]).font = { bold: true, size: 13 };
@@ -308,7 +308,7 @@ export function isDue(schedule: ReportSchedule | null, lastSentAt: Date | null, 
 
 async function mailFile(orgId: string, to: string[], subject: string, text: string, file: { bytes: Uint8Array; fileName: string; contentType: string }, related: { type: string; id: string }) {
   return sendEmail(
-    { fromName: 'SupplyLine reports', to, subject, text, attachments: [{ fileName: file.fileName, contentType: file.contentType, content: Buffer.from(file.bytes).toString('base64') }] },
+    { fromName: 'Bowron reports', to, subject, text, attachments: [{ fileName: file.fileName, contentType: file.contentType, content: Buffer.from(file.bytes).toString('base64') }] },
     { organizationId: orgId, relatedType: related.type, relatedId: related.id },
   );
 }
@@ -324,7 +324,7 @@ export async function runScheduledReports(now = new Date()): Promise<number> {
       const auth = owner ? { sessionId: 'report', userId: owner.id, orgId: owner.organizationId, companyId: owner.companyId, email: owner.email, name: owner.name, roles: owner.roles as AuthContext['roles'], isPlatformOwner: owner.isPlatformOwner, clientApp: 'server', clientVersion: '0', extraCompanyIds: owner.extraCompanyIds } : await systemAuth(r.organizationId);
       if (!auth) continue;
       const file = await renderReport(auth, view(r, auth, new Map()));
-      await mailFile(r.organizationId, r.recipients, `${r.name} (${file.fileName.match(/\d{4}-\d{2}-\d{2}-to-\d{4}-\d{2}-\d{2}/)?.[0]?.replace('-to-', ' to ') ?? ''})`, `Your scheduled SupplyLine report "${r.name}" is attached (${file.rows} rows).`, file, { type: 'saved_report', id: r.id });
+      await mailFile(r.organizationId, r.recipients, `${r.name} (${file.fileName.match(/\d{4}-\d{2}-\d{2}-to-\d{4}-\d{2}-\d{2}/)?.[0]?.replace('-to-', ' to ') ?? ''})`, `Your scheduled Bowron report "${r.name}" is attached (${file.rows} rows).`, file, { type: 'saved_report', id: r.id });
       await db.savedReport.update({ where: { id: r.id }, data: { lastSentAt: now } });
       sent++;
     } catch (e) {
@@ -402,7 +402,7 @@ export async function pmUpdateText(auth: AuthContext, siteId: string, now = new 
     ...(open.length
       ? open.slice(0, 60).map((r) => `  - ${r.ref} ${r.description}: ${r.ordered} ${r.uom} ordered · ${r.outstanding ? `${r.outstanding} not arrived` : ''}${r.inYard ? ` ${r.inYard} in yard` : ''}${r.inTransit ? ` ${r.inTransit} on the way` : ''}${r.requiredOnSite ? ` · needed ${r.requiredOnSite}` : ''}`.replace(/ · $/, ''))
       : ['  Everything ordered is on site.']),
-    ...(open.length > 60 ? [`  …and ${open.length - 60} more (open the job in SupplyLine).`] : []),
+    ...(open.length > 60 ? [`  …and ${open.length - 60} more (open the job in Bowron).`] : []),
   ];
   return { subject: `Weekly update: ${job.siteLabel}`, text: lines.join('\n') };
 }
@@ -426,7 +426,7 @@ export async function runPmWeekly(now = new Date()): Promise<number> {
       try {
         const u = await pmUpdateText(auth, j.id, now);
         if (!u) continue;
-        await sendEmail({ fromName: 'SupplyLine', to: [pm.email], subject: u.subject, text: `${u.text}\n\nOpen in SupplyLine: ${env().APP_URL.replace(/\/$/, '')}/yard/by-job/?siteId=${j.id}` }, { organizationId: org.id, relatedType: 'pm_weekly', relatedId: j.id });
+        await sendEmail({ fromName: 'Bowron', to: [pm.email], subject: u.subject, text: `${u.text}\n\nOpen in Bowron: ${env().APP_URL.replace(/\/$/, '')}/yard/by-job/?siteId=${j.id}` }, { organizationId: org.id, relatedType: 'pm_weekly', relatedId: j.id });
         sent++;
       } catch (e) {
         console.error('[reports] PM weekly failed', j.id, e);

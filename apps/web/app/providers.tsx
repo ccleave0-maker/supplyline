@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, type ReactNode } from 'react';
-import { SupplyLineRoot } from '@supplyline/core/ui';
+import { BowronRoot } from '@supplyline/core/ui';
 import { platform } from '../src/platform';
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -11,5 +11,5 @@ export function Providers({ children }: { children: ReactNode }) {
       navigator.serviceWorker.register('/sw.js').catch(() => undefined);
     }
   }, []);
-  return <SupplyLineRoot platform={platform}>{children}</SupplyLineRoot>;
+  return <BowronRoot platform={platform}>{children}</BowronRoot>;
 }

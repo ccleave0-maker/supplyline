@@ -205,7 +205,7 @@ export async function runSecurityAlerts(_now = new Date()): Promise<number> {
     for (const a of admins)
       await db.notification.create({ data: { userId: a.id, type: 'SECURITY', title: `Security: ${events.length} event(s) to review`, body: events.slice(0, 3).map((e) => `${e.who ?? 'Someone'}: ${e.label}`).join('\n'), link: '/admin/security/' } });
     if (securityOf(org.settings).alertAdmins && admins.length)
-      await sendEmail({ fromName: env().EMAIL_FROM_NAME, to: admins.map((a) => a.email), subject: `SupplyLine security: ${events.length} event(s) to review`, text: `${lines.join('\n')}\n\nReview them under Admin › Security.` }, { organizationId: orgId, relatedType: 'security_alert' });
+      await sendEmail({ fromName: env().EMAIL_FROM_NAME, to: admins.map((a) => a.email), subject: `Bowron security: ${events.length} event(s) to review`, text: `${lines.join('\n')}\n\nReview them under Admin › Security.` }, { organizationId: orgId, relatedType: 'security_alert' });
     sent += events.length;
   }
   return sent;

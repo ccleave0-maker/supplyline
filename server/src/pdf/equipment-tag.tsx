@@ -1,7 +1,7 @@
 import { Document, Image, Page, StyleSheet, Text, View, renderToBuffer } from '@react-pdf/renderer';
 
 // Equipment QR tags: one per unit, four to a letter page (cut and tape / laminate).
-// Scanning a tag in SupplyLine opens the unit (where it is, record a move).
+// Scanning a tag in Bowron opens the unit (where it is, record a move).
 
 export interface EquipmentTag {
   unitNumber: string;
@@ -26,7 +26,7 @@ export async function renderEquipmentTags(tags: EquipmentTag[]): Promise<Buffer>
   const pages: EquipmentTag[][] = [];
   for (let i = 0; i < tags.length; i += 4) pages.push(tags.slice(i, i + 4));
   return renderToBuffer(
-    <Document title="Equipment tags" creator="SupplyLine">
+    <Document title="Equipment tags" creator="Bowron">
       {pages.map((p, i) => (
         <Page key={i} size="LETTER" style={s.page}>
           {p.map((t) => (
@@ -37,7 +37,7 @@ export async function renderEquipmentTags(tags: EquipmentTag[]): Promise<Buffer>
                 <Text style={s.desc}>{t.description}</Text>
                 {t.detail && <Text style={s.small}>{t.detail}</Text>}
                 <Image src={{ data: t.qr, format: 'png' }} style={{ width: 170, height: 170 }} />
-                <Text style={s.small}>{t.companyName} · scan in SupplyLine to see or move this unit</Text>
+                <Text style={s.small}>{t.companyName} · scan in Bowron to see or move this unit</Text>
               </View>
             </View>
           ))}

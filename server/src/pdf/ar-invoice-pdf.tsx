@@ -43,7 +43,7 @@ const s = StyleSheet.create({
 
 function ArDoc({ d }: { d: ArPdfData }) {
   return (
-    <Document title={`Invoice ${d.invoiceNumber} – ${d.companyName}`} author={d.companyName} creator="SupplyLine">
+    <Document title={`Invoice ${d.invoiceNumber} – ${d.companyName}`} author={d.companyName} creator="Bowron">
       <Page size="LETTER" style={s.page}>
         <View style={s.header}>
           <View>

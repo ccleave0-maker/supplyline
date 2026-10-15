@@ -10,7 +10,7 @@ export interface EmailAttachment {
 }
 
 export interface OutgoingEmail {
-  /** Display name, e.g. "Jane Smith via SupplyLine" */
+  /** Display name, e.g. "Jane Smith via Bowron" */
   fromName: string;
   replyTo?: string | null;
   to: string[];
@@ -213,7 +213,7 @@ export async function deliverRecord(recordId: string, msg: OutgoingEmail): Promi
   return false;
 }
 
-/** "Jane Smith via SupplyLine" */
+/** "Jane Smith via Bowron" */
 export function viaName(personName: string | null | undefined): string {
   const product = env().EMAIL_FROM_NAME;
   return personName ? `${personName} via ${product}` : product;

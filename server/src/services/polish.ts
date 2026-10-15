@@ -139,7 +139,7 @@ export async function activityFeed(auth: AuthContext, f: { siteId?: string; limi
       if (x.siteId && !siteMap.has(x.siteId)) continue;
       if (f.siteId && x.siteId !== f.siteId) continue;
       const who = r.userId ? (users.get(r.userId) ?? null) : null;
-      out.push({ id: String(r.id), at: r.at.toISOString(), text: `${who ?? 'SupplyLine'} ${x.text}`, who, siteLabel: x.siteId ? (siteMap.get(x.siteId) ?? null) : null, link: x.link, icon: x.icon });
+      out.push({ id: String(r.id), at: r.at.toISOString(), text: `${who ?? 'Bowron'} ${x.text}`, who, siteLabel: x.siteId ? (siteMap.get(x.siteId) ?? null) : null, link: x.link, icon: x.icon });
     }
   }
   return out;

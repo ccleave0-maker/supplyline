@@ -79,7 +79,7 @@ function BolDoc({ d, qr }: { d: BolPdfData; qr: Buffer }) {
   const title = d.direction === 'RETURN' ? 'RETURN BILL OF LADING' : 'BILL OF LADING';
   const number = d.bolNumber != null ? `BOL #${d.bolNumber}` : 'DRAFT – NOT ISSUED';
   return (
-    <Document title={`${number} – ${d.companyName}`} author={d.companyName} creator="SupplyLine">
+    <Document title={`${number} – ${d.companyName}`} author={d.companyName} creator="Bowron">
       <Page size="LETTER" style={s.page}>
         <View style={s.header}>
           <View>
@@ -90,7 +90,7 @@ function BolDoc({ d, qr }: { d: BolPdfData; qr: Buffer }) {
           </View>
           <View style={{ alignItems: 'center' }}>
             <Image src={{ data: qr, format: 'png' }} style={{ width: 92, height: 92 }} />
-            <Text style={[s.muted, { fontSize: 7 }]}>Scan in SupplyLine to receive</Text>
+            <Text style={[s.muted, { fontSize: 7 }]}>Scan in Bowron to receive</Text>
           </View>
         </View>
 

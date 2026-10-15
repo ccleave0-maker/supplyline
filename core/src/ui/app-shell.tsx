@@ -119,7 +119,7 @@ function normalize(pathname: string | null) {
 function Splash() {
   return (
     <div className="flex min-h-dvh items-center justify-center bg-surface-2 text-brand-ink">
-      <Spinner label="Starting SupplyLine" />
+      <Spinner label="Starting Bowron" />
     </div>
   );
 }
@@ -217,7 +217,7 @@ function UpdateBanner() {
   if (!outdated) return null;
   return (
     <div role="alert" className="bg-warn-bg px-4 py-2 text-center text-warn-ink">
-      A newer version of SupplyLine is required. Please update the app.
+      A newer version of Bowron is required. Please update the app.
     </div>
   );
 }

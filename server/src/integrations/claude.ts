@@ -1,4 +1,4 @@
-// The only place SupplyLine talks to Claude (and to the optional speech-to-text
+// The only place Bowron talks to Claude (and to the optional speech-to-text
 // service). Tests swap these out, so they never call the real services.
 
 import Anthropic from '@anthropic-ai/sdk';

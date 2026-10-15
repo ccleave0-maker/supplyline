@@ -30,7 +30,7 @@ function TableDoc({ d }: { d: TablePdfData }) {
   const landscape = d.columns.length > 6;
   const printed = new Date().toLocaleString('en-CA', { dateStyle: 'medium', timeStyle: 'short' });
   return (
-    <Document title={d.title} author={d.companyName ?? 'SupplyLine'} creator="SupplyLine">
+    <Document title={d.title} author={d.companyName ?? 'Bowron'} creator="Bowron">
       <Page size="LETTER" orientation={landscape ? 'landscape' : 'portrait'} style={s.page}>
         <View style={s.header} fixed>
           <View>

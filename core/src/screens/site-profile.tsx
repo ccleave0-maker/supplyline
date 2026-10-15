@@ -340,7 +340,7 @@ function EmailRoutingCard({ site, onChanged }: { site: SiteDetail; onChanged: ()
 
   return (
     <Card title="Order emails">
-      <p className="mb-3 text-muted">When an order is submitted for this {site.type === 'JOB' ? 'job' : 'yard'}, SupplyLine emails:</p>
+      <p className="mb-3 text-muted">When an order is submitted for this {site.type === 'JOB' ? 'job' : 'yard'}, Bowron emails:</p>
       <ErrorBanner error={add.error ?? remove.error} />
       <div className="flex flex-col gap-4">
         {EMAIL_RECIPIENT_KINDS.map((k) => {

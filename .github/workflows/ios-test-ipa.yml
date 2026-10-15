@@ -1,13 +1,13 @@
 # Builds an unsigned iPhone test app (.ipa) on a GitHub Mac, for sideloading.
 # Run it from GitHub › Actions › "iPhone test app" › Run workflow, then download the
-# "SupplyLine-ipa" file from the finished run. Install it with Sideloadly (Windows),
+# "Bowron-ipa" file from the finished run. Install it with Sideloadly (Windows),
 # which signs it with your own Apple ID. Nothing here needs keys or an Apple developer account.
 name: iPhone test app
 on:
   workflow_dispatch:
     inputs:
       api_url:
-        description: 'Where the SupplyLine server runs, as the phone sees it (e.g. http://192.168.1.72:4000 or your https server)'
+        description: 'Where the Bowron server runs, as the phone sees it (e.g. http://192.168.1.72:4000 or your https server)'
         required: true
         default: 'http://192.168.1.72:4000'
 
@@ -42,11 +42,11 @@ jobs:
         working-directory: apps/ios/ios/App/App
         run: |
           set_key() { /usr/libexec/PlistBuddy -c "Set :$1 $2" Info.plist 2>/dev/null || /usr/libexec/PlistBuddy -c "Add :$1 string $2" Info.plist; }
-          set_key NSCameraUsageDescription "SupplyLine uses the camera to scan QR codes and take photos of deliveries, packing slips and damage."
-          set_key NSPhotoLibraryUsageDescription "SupplyLine lets you attach photos already on your phone, like packing slips and receipts."
-          set_key NSPhotoLibraryAddUsageDescription "SupplyLine can save photos you take to your library."
-          set_key NSMicrophoneUsageDescription "SupplyLine uses the microphone when you tap the mic to speak to the assistant or record a meeting."
-          set_key NSSpeechRecognitionUsageDescription "SupplyLine turns what you say into text when you use voice commands."
+          set_key NSCameraUsageDescription "Bowron uses the camera to scan QR codes and take photos of deliveries, packing slips and damage."
+          set_key NSPhotoLibraryUsageDescription "Bowron lets you attach photos already on your phone, like packing slips and receipts."
+          set_key NSPhotoLibraryAddUsageDescription "Bowron can save photos you take to your library."
+          set_key NSMicrophoneUsageDescription "Bowron uses the microphone when you tap the mic to speak to the assistant or record a meeting."
+          set_key NSSpeechRecognitionUsageDescription "Bowron turns what you say into text when you use voice commands."
           # Phones only show it upright; iPads can turn.
           /usr/libexec/PlistBuddy -c "Delete :UISupportedInterfaceOrientations" Info.plist || true
           /usr/libexec/PlistBuddy -c "Add :UISupportedInterfaceOrientations array" Info.plist
@@ -61,7 +61,7 @@ jobs:
           /usr/libexec/PlistBuddy -c "Add :NSAppTransportSecurity dict" Info.plist || true
           /usr/libexec/PlistBuddy -c "Add :NSAppTransportSecurity:NSAllowsArbitraryLoads bool true" Info.plist || true
           /usr/libexec/PlistBuddy -c "Add :NSAppTransportSecurity:NSAllowsLocalNetworking bool true" Info.plist || true
-          /usr/libexec/PlistBuddy -c "Add :NSLocalNetworkUsageDescription string 'SupplyLine connects to your SupplyLine server on this network.'" Info.plist || true
+          /usr/libexec/PlistBuddy -c "Add :NSLocalNetworkUsageDescription string 'Bowron connects to your Bowron server on this network.'" Info.plist || true
 
       - name: Compile (unsigned)
         working-directory: apps/ios/ios/App
@@ -76,10 +76,10 @@ jobs:
         run: |
           mkdir -p Payload
           cp -R build/Build/Products/Release-iphoneos/App.app Payload/
-          zip -qry SupplyLine-test.ipa Payload
+          zip -qry Bowron-test.ipa Payload
 
       - uses: actions/upload-artifact@v4
         with:
-          name: SupplyLine-ipa
-          path: apps/ios/ios/App/SupplyLine-test.ipa
+          name: Bowron-ipa
+          path: apps/ios/ios/App/Bowron-test.ipa
           retention-days: 14

@@ -190,7 +190,7 @@ export function SupplierImportCard() {
             </table>
           </div>
           {me.companies.length > 1 && <SelectField label="Suppliers for" value={companyId} onChange={(e) => setCompanyId(e.target.value)} options={me.companies.map((c) => ({ value: c.id, label: c.name }))} />}
-          <p className="text-sm text-muted">New suppliers are added; ones already in SupplyLine only get their blank fields filled in.</p>
+          <p className="text-sm text-muted">New suppliers are added; ones already in Bowron only get their blank fields filled in.</p>
           <div className="flex gap-2">
             <Button busy={go.busy} disabled={!companyId} onClick={() => void go.run()}>
               Import {preview.total} suppliers

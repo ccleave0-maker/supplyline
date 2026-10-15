@@ -1056,7 +1056,7 @@ function EtaCard({ po, onChanged }: { po: PoDetail; onChanged: (p: PoDetail) => 
   );
 }
 
-/** When the vendor isn't arranging shipping: post the PO to SupplyLine's load board, and see where it is. */
+/** When the vendor isn't arranging shipping: post the PO to Bowron's load board, and see where it is. */
 function PoShippingCard({ po, onChanged }: { po: PoDetail; onChanged: () => void }) {
   const { api } = useAuthed();
   const sh = po.shipping;

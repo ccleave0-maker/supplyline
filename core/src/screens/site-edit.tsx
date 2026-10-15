@@ -111,7 +111,7 @@ export function SiteEditScreen() {
 
   const locate = useAction(async () => {
     const pos = await platform.location.getCurrentPosition();
-    if (!pos) throw new Error("Couldn't get your location. Check that location access is allowed for SupplyLine.");
+    if (!pos) throw new Error("Couldn't get your location. Check that location access is allowed for Bowron.");
     setForm((f) => ({ ...f, lat: pos.lat, lng: pos.lng }));
   });
 

@@ -48,7 +48,7 @@ async function notifyProcurement(
   for (const siteId of [...new Set(siteIds)]) for (const e of await recipientsFor(companyId, siteId, 'PROCUREMENT')) to.add(e);
   if (to.size)
     await sendEmail(
-      { fromName: viaName(auth.name), replyTo: auth.email, to: [...to], subject, text: `${text}\n\nOpen in SupplyLine: ${appLink(link)}` },
+      { fromName: viaName(auth.name), replyTo: auth.email, to: [...to], subject, text: `${text}\n\nOpen in Bowron: ${appLink(link)}` },
       { organizationId: auth.orgId, relatedType, relatedId },
     );
   // In-app notifications for the company's procurement people.

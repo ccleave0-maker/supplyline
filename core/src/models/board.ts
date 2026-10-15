@@ -18,7 +18,7 @@ export const boardSettingsInput = z.object({
   companyIds: z.array(idSchema).max(50).nullable(),
   /** Map: OpenStreetMap (no account), or Google Maps when a key is added */
   mapProvider: z.enum(['osm', 'google']),
-  /** Google Maps JavaScript API key (restrict it to your SupplyLine address in Google Cloud) */
+  /** Google Maps JavaScript API key (restrict it to your Bowron address in Google Cloud) */
   googleMapsKey: z.string().trim().max(200).nullable(),
 });
 export type BoardSettings = z.infer<typeof boardSettingsInput>;

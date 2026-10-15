@@ -132,7 +132,7 @@ function useRecorder(onPiece: (b: Blob, n: number) => Promise<void>) {
   const start = useCallback(async () => {
     setError(null);
     const r = await platform.speech.record();
-    if (!r) return setError(new Error('Couldn’t use the microphone. Allow it for SupplyLine, or take notes by typing.'));
+    if (!r) return setError(new Error('Couldn’t use the microphone. Allow it for Bowron, or take notes by typing.'));
     rec.current = r;
     setOn(true);
     const began = Date.now();

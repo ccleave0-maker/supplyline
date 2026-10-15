@@ -91,7 +91,7 @@ export function FilingAdminScreen() {
 
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader title="Network filing & Sync" subtitle="A copy of every document SupplyLine makes, saved into your own folders by company, job and type." />
+      <PageHeader title="Network filing & Sync" subtitle="A copy of every document Bowron makes, saved into your own folders by company, job and type." />
       <DataTabs here={paths.filingAdmin()} />
       {me.companies.length > 1 && <SelectField label="Company" value={companyId} onChange={(e) => setCompanyId(e.target.value)} options={me.companies.map((c) => ({ value: c.id, label: c.name }))} />}
       <ErrorBanner error={loaded.error || save.error || retry.error} />
@@ -105,11 +105,11 @@ export function FilingAdminScreen() {
             value={s.mode}
             onChange={(e) => set('mode', e.target.value as FilingSettings['mode'])}
             options={[
-              { value: 'DIRECT', label: 'The SupplyLine server writes them (it is on our network)' },
-              { value: 'SYNC', label: 'SupplyLine Sync app on one of our PCs' },
+              { value: 'DIRECT', label: 'The Bowron server writes them (it is on our network)' },
+              { value: 'SYNC', label: 'Bowron Sync app on one of our PCs' },
             ]}
           />
-          <TextField label="Main folder" placeholder="P:\SupplyLine or \\server\share\SupplyLine" value={s.root} onChange={(e) => set('root', e.target.value)} hint={s.mode === 'SYNC' ? 'As that PC sees it.' : 'As the server sees it.'} />
+          <TextField label="Main folder" placeholder="P:\Bowron or \\server\share\Bowron" value={s.root} onChange={(e) => set('root', e.target.value)} hint={s.mode === 'SYNC' ? 'As that PC sees it.' : 'As the server sees it.'} />
         </div>
         <p className="mt-4 font-semibold text-ink">What to save, and where</p>
         <p className="text-sm text-muted">
@@ -166,7 +166,7 @@ export function FilingAdminScreen() {
 
       <Card title="Sync app PCs">
         <p className="text-sm text-muted">
-          When SupplyLine runs online it can’t reach your shared drives. Install the SupplyLine Sync app on a PC that can (it needs Node.js 22) — it files these copies and looks after the AP inbox folders. Setup steps are in its README.
+          When Bowron runs online it can’t reach your shared drives. Install the Bowron Sync app on a PC that can (it needs Node.js 22) — it files these copies and looks after the AP inbox folders. Setup steps are in its README.
         </p>
         <ErrorBanner error={devices.error || addDevice.error || removeDevice.error} />
         {newKey && (
@@ -526,12 +526,12 @@ export function DataExportScreen() {
   const [done, setDone] = useState('');
   const run = useAction(async () => {
     const blob = await api.dataExport(includeFiles);
-    await platform.files.saveFile(`SupplyLine-export-${today()}.zip`, blob);
+    await platform.files.saveFile(`Bowron-export-${today()}.zip`, blob);
     setDone(`Saved (${(blob.size / 1_048_576).toFixed(1)} MB).`);
   });
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader title="Export everything" subtitle="All of your organization’s SupplyLine data in one ZIP file — yours to keep or move to another system." />
+      <PageHeader title="Export everything" subtitle="All of your organization’s Bowron data in one ZIP file — yours to keep or move to another system." />
       <DataTabs here={paths.dataExport()} />
       <Card>
         <ul className="list-disc pl-6 text-ink">

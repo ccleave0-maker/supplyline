@@ -179,7 +179,7 @@ export function worstState(states: ComplianceState[]): ComplianceState {
 
 // Job notifications ------------------------------------------------------------
 export interface NotifyRuleView {
-  /** A person in SupplyLine (job member or added), or null for an email-only row */
+  /** A person in Bowron (job member or added), or null for an email-only row */
   userId: string | null;
   email: string;
   name: string;

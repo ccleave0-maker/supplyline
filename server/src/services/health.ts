@@ -103,7 +103,7 @@ export async function runChecks(orgId: string): Promise<HealthResult[]> {
       if (stuck) problems.push(`${stuck} waiting over an hour.`);
       return problems.length ? { ok: false, detail: problems.join(' ') } : { ok: true, detail: 'Folders reachable; nothing stuck.' };
     }),
-    timed('sync', 'SupplyLine Sync app', async () => {
+    timed('sync', 'Bowron Sync app', async () => {
       const needs = companies.some((c) => filingOf(c.settings).mode === 'SYNC' && (filingOf(c.settings).enabled || accountingOf(c.settings).folders.inbox));
       const devices = await db.syncDevice.findMany({ where: { organizationId: orgId, revokedAt: null } });
       if (!needs && !devices.length) return { ok: true, warn: true, detail: 'Not used.' };
@@ -171,10 +171,10 @@ async function alert(orgId: string, ok: boolean, results: HealthResult[]): Promi
   if (!to.length) return false;
   const bad = results.filter((r) => !r.ok);
   const text = ok
-    ? `Good news: every SupplyLine health check for ${org.name} is passing again.\n\n${results.map((r) => `✔ ${r.label}: ${r.detail}`).join('\n')}`
-    : `Something needs a look in SupplyLine for ${org.name}:\n\n${bad.map((r) => `✖ ${r.label}: ${r.detail}`).join('\n')}\n\nEverything else:\n${results.filter((r) => r.ok).map((r) => `✔ ${r.label}`).join('\n')}\n\nSee Admin › Health for details. You'll get another email when it's fixed.`;
+    ? `Good news: every Bowron health check for ${org.name} is passing again.\n\n${results.map((r) => `✔ ${r.label}: ${r.detail}`).join('\n')}`
+    : `Something needs a look in Bowron for ${org.name}:\n\n${bad.map((r) => `✖ ${r.label}: ${r.detail}`).join('\n')}\n\nEverything else:\n${results.filter((r) => r.ok).map((r) => `✔ ${r.label}`).join('\n')}\n\nSee Admin › Health for details. You'll get another email when it's fixed.`;
   const r = await sendEmail(
-    { fromName: 'SupplyLine health check', to, subject: ok ? `SupplyLine is healthy again (${org.name})` : `SupplyLine needs a look: ${bad.map((b) => b.label).join(', ')} (${org.name})`, text },
+    { fromName: 'Bowron health check', to, subject: ok ? `Bowron is healthy again (${org.name})` : `Bowron needs a look: ${bad.map((b) => b.label).join(', ')} (${org.name})`, text },
     { organizationId: orgId, relatedType: 'health', relatedId: orgId },
   );
   return r.ok;

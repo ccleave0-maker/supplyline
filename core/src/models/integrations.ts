@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { idSchema } from './common';
 
 // ---------------------------------------------------------------------------
-// Network filing: copies of everything SupplyLine makes, in your folders
+// Network filing: copies of everything Bowron makes, in your folders
 // ---------------------------------------------------------------------------
 export const FILING_DOC_TYPES = [
   { key: 'ORDER_PDF', label: 'Order lists (PDF)', folder: '{company}\\Jobs\\{job}\\Order lists' },
@@ -25,10 +25,10 @@ const DOC_KEYS = FILING_DOC_TYPES.map((d) => d.key) as [FilingDocType, ...Filing
 
 export const filingSettingsInput = z.object({
   enabled: z.boolean(),
-  /** DIRECT = the SupplyLine server writes to the folder (it runs on your network);
-   *  SYNC = the SupplyLine Sync app on a PC on your network does it (when SupplyLine is online) */
+  /** DIRECT = the Bowron server writes to the folder (it runs on your network);
+   *  SYNC = the Bowron Sync app on a PC on your network does it (when Bowron is online) */
   mode: z.enum(['DIRECT', 'SYNC']),
-  /** e.g. P:\SupplyLine or \\server\share\SupplyLine */
+  /** e.g. P:\Bowron or \\server\share\Bowron */
   root: z.string().trim().max(500),
   /** Folder for each kind of document under the root; {company} {job} {year} {month} {vendor} are filled in */
   folders: z.record(z.string(), z.string().trim().max(300)),
@@ -326,7 +326,7 @@ export interface SupplierImportPreview {
   /** Which heading was used for each field */
   columns: Partial<Record<keyof SupplierRow, string>>;
   total: number;
-  /** Not in SupplyLine yet */
+  /** Not in Bowron yet */
   newCount: number;
   rows: SupplierRow[];
 }

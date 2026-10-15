@@ -1,6 +1,6 @@
 'use client';
 
-// PC app auto-update: checks the SupplyLine server for a newer signed version at
+// PC app auto-update: checks the Bowron server for a newer signed version at
 // start-up and every 6 hours; offers to restart into it.
 import { useEffect, useState } from 'react';
 
@@ -39,7 +39,7 @@ export function UpdateChecker() {
   if (!ready) return null;
   return (
     <div role="status" className="fixed inset-x-0 top-0 z-50 flex flex-wrap items-center justify-center gap-3 bg-brand px-4 py-2 text-brand-fg">
-      <span>SupplyLine {ready.version} is ready.</span>
+      <span>Bowron {ready.version} is ready.</span>
       <button
         type="button"
         disabled={busy}

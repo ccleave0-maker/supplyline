@@ -1,7 +1,7 @@
 [package]
 name = "supplyline-desktop"
 version = "0.1.0"
-description = "SupplyLine desktop app"
+description = "Bowron desktop app"
 authors = ["Your Name"]
 edition = "2021"
 

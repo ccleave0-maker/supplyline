@@ -113,7 +113,7 @@ describe('AI settings, switches, costs and caps', () => {
     await voiceFill(s.site, input); // 0.0164 → over 100%
     await expect(voiceFill(s.site, input)).rejects.toThrow(/cap/);
     const alerts = await db.emailOutbox.findMany({ where: { organizationId: s.org.id, relatedType: 'ai_cap' }, orderBy: { createdAt: 'asc' } });
-    expect(alerts.map((a) => a.subject)).toEqual(["SupplyLine AI spending: 80% of this month's cap", "SupplyLine AI spending: 100% of this month's cap"]);
+    expect(alerts.map((a) => a.subject)).toEqual(["Bowron AI spending: 80% of this month's cap", "Bowron AI spending: 100% of this month's cap"]);
   });
 
   it('uses the platform key only when the owner allowed it', async () => {

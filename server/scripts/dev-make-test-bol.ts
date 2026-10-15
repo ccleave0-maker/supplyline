@@ -79,7 +79,7 @@ async function main() {
     <text x="90" y="390" font-family="Arial" font-size="30">Driver: Test Driver · Truck T-1 · ${today}</text>
     <text x="90" y="700" font-family="Arial" font-size="34" font-weight="bold">Items</text>
     <g font-family="Arial">${lines}</g>
-    <text x="90" y="1450" font-family="Arial" font-size="26" fill="#777">TEST – photo of a BOL for trying Scan BOL in SupplyLine</text>
+    <text x="90" y="1450" font-family="Arial" font-size="26" fill="#777">TEST – photo of a BOL for trying Scan BOL in Bowron</text>
   </svg>`);
   const photo = await sharp(page)
     .composite([{ input: qr, left: 820, top: 90 }])

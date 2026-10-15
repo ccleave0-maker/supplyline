@@ -905,7 +905,7 @@ export function NotificationsCard({ siteId }: { siteId: string }) {
         </>
       ) : (
         <>
-          <p className="mb-2 text-sm text-muted">Tick what each person is told about this job. Notices come as an email and, for people in SupplyLine, in the app.</p>
+          <p className="mb-2 text-sm text-muted">Tick what each person is told about this job. Notices come as an email and, for people in Bowron, in the app.</p>
           <div className="flex flex-col gap-3">
             {rows.map((r, i) => (
               <fieldset key={r.userId ?? r.email} className="rounded-lg border border-line p-3">

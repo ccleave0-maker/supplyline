@@ -1,1 +1,1 @@
-{"default":{"identifier":"default","description":"Permissions for the main SupplyLine window","local":true,"windows":["main"],"permissions":["core:default","updater:default","process:allow-restart"]}}
+{"default":{"identifier":"default","description":"Permissions for the main Bowron window","local":true,"windows":["main"],"permissions":["core:default","updater:default","process:allow-restart"]}}

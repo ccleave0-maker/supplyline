@@ -117,10 +117,10 @@ export async function sendInviteEmail(opts: {
       fromName: viaName(opts.inviterName),
       replyTo: opts.inviterEmail,
       to: [opts.email],
-      subject: `You're invited to ${opts.orgName} on SupplyLine`,
+      subject: `You're invited to ${opts.orgName} on Bowron`,
       text:
-        `${opts.inviterName ?? 'Your administrator'} has given you access to ${opts.orgName} on SupplyLine.\n\n` +
-        `To sign in, open ${appUrl} (or the SupplyLine app) and enter this email address: ${opts.email}\n` +
+        `${opts.inviterName ?? 'Your administrator'} has given you access to ${opts.orgName} on Bowron.\n\n` +
+        `To sign in, open ${appUrl} (or the Bowron app) and enter this email address: ${opts.email}\n` +
         `We'll email you a 6-digit code — no password needed.\n\n` +
         `This invite expires in ${INVITE_DAYS} days.`,
     },

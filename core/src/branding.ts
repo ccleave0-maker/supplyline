@@ -1,7 +1,7 @@
 // Product branding placeholders. Fill these in before publishing.
 // Nothing here may reference a customer company.
 export const BRANDING = {
-  productName: 'SupplyLine',
+  productName: 'Bowron',
   tagline: 'Construction procurement, from order to site',
   developerName: 'Your Name',
   supportEmail: 'support@example.com',

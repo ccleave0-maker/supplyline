@@ -1,4 +1,4 @@
-# SupplyLine — going live
+# Bowron — going live
 
 Everything that doesn't need an account is built and tested. This page lists what
 only the owner can set up, in order, and where each value goes. **Keys and passwords
@@ -66,7 +66,7 @@ always go in the host's settings or the admin pages — never in code or chat.**
 3. Admin › Health checks: alerts go to all admins + you unless you set addresses.
 
 ## 6. Payments (Stripe) — optional, can wait
-1. Stripe account (Canada) › Products: “SupplyLine Standard” and “Pro”, **monthly price per seat in CAD**.
+1. Stripe account (Canada) › Products: “Bowron Standard” and “Pro”, **monthly price per seat in CAD**.
 2. Server settings: `STRIPE_SECRET_KEY`, `STRIPE_PRICE_STANDARD`, `STRIPE_PRICE_PRO`.
 3. Developers › Webhooks › endpoint `https://api.<domain>/api/v1/billing/stripe-webhook`,
    events: `checkout.session.completed`, `customer.subscription.updated`,

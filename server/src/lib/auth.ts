@@ -66,7 +66,7 @@ export async function authenticate(req: Request): Promise<AuthContext> {
   const { user } = session;
   if (!user.active || user.deletedAt) throw unauthorized('Your access has been removed. Contact your administrator.');
   if (user.organization.status !== 'ACTIVE' && !user.isPlatformOwner) {
-    throw unauthorized('Your organization is suspended. Contact SupplyLine support.');
+    throw unauthorized('Your organization is suspended. Contact Bowron support.');
   }
 
   // Sliding expiry, written at most every 5 minutes.

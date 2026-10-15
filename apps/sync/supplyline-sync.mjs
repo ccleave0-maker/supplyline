@@ -1,15 +1,15 @@
 #!/usr/bin/env node
-// SupplyLine Sync — runs on a PC on your network (Node 22 or newer, nothing else
-// to install). When SupplyLine is hosted online it can't see your shared drives,
+// Bowron Sync — runs on a PC on your network (Node 22 or newer, nothing else
+// to install). When Bowron is hosted online it can't see your shared drives,
 // so this app does the network-folder work for it:
 //   1. Network filing: writes copies of new documents (order lists, BOLs, POs,
 //      receiving photos, invoices…) into your folders by type.
 //   2. AP inbox: sends invoices dropped into each company's AP inbox folder to
-//      SupplyLine, then moves each file to In review / Approved / Rejected /
+//      Bowron, then moves each file to In review / Approved / Rejected /
 //      On hold as the invoice moves along.
 //
 // Setup: copy sync.config.example.json to sync.config.json, put in your
-// SupplyLine address and the device key from Admin › Network filing & Sync.
+// Bowron address and the device key from Admin › Network filing & Sync.
 //   node supplyline-sync.mjs           keep running (checks every minute)
 //   node supplyline-sync.mjs --once    do one pass and stop (for Task Scheduler)
 //   node supplyline-sync.mjs --test    check the address, key and folders
@@ -234,7 +234,7 @@ async function main() {
     await log(`pass done: ${r.filed} filed, ${r.sent} invoice(s) sent`);
     return;
   }
-  await log(`SupplyLine Sync ${VERSION} started (every ${cfg.intervalSeconds}s) → ${cfg.server}`);
+  await log(`Bowron Sync ${VERSION} started (every ${cfg.intervalSeconds}s) → ${cfg.server}`);
   for (;;) {
     try {
       const r = await pass(cfg);

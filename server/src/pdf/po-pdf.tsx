@@ -62,7 +62,7 @@ function PoDoc({ d, packing }: { d: PoPdfData; packing: boolean }) {
     : { n: '5%', ref: '17%', desc: '38%', qty: '9%', uom: '7%', unit: '12%', ext: '12%' };
   const title = packing ? 'PACKING LIST' : 'PURCHASE ORDER';
   return (
-    <Document title={`${title} ${d.poNumber} – ${d.companyName}`} author={d.companyName} creator="SupplyLine">
+    <Document title={`${title} ${d.poNumber} – ${d.companyName}`} author={d.companyName} creator="Bowron">
       <Page size="LETTER" style={s.page}>
         <View style={s.header}>
           <View>
@@ -72,7 +72,7 @@ function PoDoc({ d, packing }: { d: PoPdfData; packing: boolean }) {
           <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
           <View style={{ alignItems: 'center', marginRight: 10 }}>
             <Image src={{ data: d.qr, format: 'png' }} style={{ width: 72, height: 72 }} />
-            <Text style={[s.muted, { fontSize: 6 }]}>Scan in SupplyLine</Text>
+            <Text style={[s.muted, { fontSize: 6 }]}>Scan in Bowron</Text>
           </View>
           <View style={{ alignItems: 'flex-end' }}>
             <Text style={s.title}>{title}</Text>
@@ -172,7 +172,7 @@ function PoDoc({ d, packing }: { d: PoPdfData; packing: boolean }) {
           </View>
         )}
         {d.taxNote && <Text style={{ marginTop: 8, fontFamily: 'Helvetica-Bold' }}>{d.taxNote}</Text>}
-        {packing && <Text style={[s.muted, { marginTop: 8 }]}>Packing list – prices removed. Check quantities on arrival and record them in SupplyLine.</Text>}
+        {packing && <Text style={[s.muted, { marginTop: 8 }]}>Packing list – prices removed. Check quantities on arrival and record them in Bowron.</Text>}
         {d.notes && (
           <View style={{ marginTop: 10 }}>
             <Text style={s.boxTitle}>Notes</Text>

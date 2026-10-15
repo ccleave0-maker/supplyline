@@ -58,7 +58,7 @@ const nativeCamera: CameraService = {
 function permissionHelp(e: unknown, what: 'camera' | 'photos') {
   const msg = String((e as { message?: string })?.message ?? e);
   if (/permission|denied|access|not authorized/i.test(msg)) {
-    return new Error(`SupplyLine isn't allowed to use your ${what === 'camera' ? 'camera' : 'photos'}. Turn it on in Settings › SupplyLine, then try again.`);
+    return new Error(`Bowron isn't allowed to use your ${what === 'camera' ? 'camera' : 'photos'}. Turn it on in Settings › Bowron, then try again.`);
   }
   return e instanceof Error ? e : new Error(msg);
 }

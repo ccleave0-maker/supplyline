@@ -153,7 +153,7 @@ export interface PoDetail extends PoSummary {
   directBolId: string | null;
   showPrices: boolean;
   can: { edit: boolean; issue: boolean; approve: boolean; cancel: boolean; close: boolean; sendToVendor: boolean; reopen: boolean; changeEta: boolean };
-  /** Getting it moved when the vendor isn't arranging shipping (SupplyLine's own load board) */
+  /** Getting it moved when the vendor isn't arranging shipping (Bowron's own load board) */
   shipping: PoShipping;
   /** Project documents attached to this PO (by link name) */
   documents: { id: string; linkName: string; url: string }[];

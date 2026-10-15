@@ -81,7 +81,7 @@ describe('submit flow', () => {
     const proc = outbox.find((e) => e.to.includes('buyer@example.com'))!;
     expect(proc.bodyText).toMatch(/^Please see attached list for processing\./);
     expect(proc.replyTo).toBe(site.email);
-    expect(proc.fromName).toBe(`${site.name} via SupplyLine`);
+    expect(proc.fromName).toBe(`${site.name} via Bowron`);
     expect(proc.attachments).toEqual([{ fileName: 'JOB2249-LIST1.pdf', contentType: 'application/pdf' }]);
     expect(outbox.find((e) => e.to.includes('yard@example.com'))!.bodyText).toMatch(/^Please confirm what you have available for stock\./);
 

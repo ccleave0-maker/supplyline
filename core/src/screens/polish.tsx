@@ -217,7 +217,7 @@ export function HealthScreen() {
     <div className="flex flex-col gap-4">
       <PageHeader
         title="Health checks"
-        subtitle="SupplyLine checks itself on a timer and emails you when something breaks — and again when it’s fixed."
+        subtitle="Bowron checks itself on a timer and emails you when something breaks — and again when it’s fixed."
         actions={
           <Button busy={run.busy} onClick={() => void run.run()}>
             Check now

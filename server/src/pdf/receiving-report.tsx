@@ -33,7 +33,7 @@ const s = StyleSheet.create({
 function Report({ d }: { d: ReceivingReportData }) {
   const problems = d.lines.filter((l) => l.problem || l.received + 1e-6 < l.expected).length;
   return (
-    <Document title={d.title} author={d.companyName} creator="SupplyLine">
+    <Document title={d.title} author={d.companyName} creator="Bowron">
       <Page size="LETTER" style={s.page}>
         <View style={s.header}>
           <View>
@@ -70,9 +70,9 @@ function Report({ d }: { d: ReceivingReportData }) {
           );
         })}
         {d.notes ? <Text style={{ marginTop: 8 }}>Notes: {d.notes}</Text> : null}
-        {d.photos ? <Text style={[s.muted, { marginTop: 4 }]}>{d.photos} photo(s) taken — in SupplyLine with this receipt.</Text> : null}
+        {d.photos ? <Text style={[s.muted, { marginTop: 4 }]}>{d.photos} photo(s) taken — in Bowron with this receipt.</Text> : null}
         <View style={s.footer} fixed>
-          <Text>{d.companyName} · SupplyLine receiving report</Text>
+          <Text>{d.companyName} · Bowron receiving report</Text>
           <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
         </View>
       </Page>

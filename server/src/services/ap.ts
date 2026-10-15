@@ -625,7 +625,7 @@ export async function sendRejection(auth: AuthContext, id: string, input: { to?:
   const inv = await load(auth, id);
   if (inv.status !== 'REJECTED') throw conflict('Only rejected invoices.');
   if (input.handledManually) {
-    await db.apInvoice.update({ where: { id }, data: { rejectionSentTo: 'Sent by mail / handled outside SupplyLine', rejectionSentAt: new Date() } });
+    await db.apInvoice.update({ where: { id }, data: { rejectionSentTo: 'Sent by mail / handled outside Bowron', rejectionSentAt: new Date() } });
     await audit(db, auth, 'ap.rejection_manual', 'ApInvoice', id, null, null);
     return getApInvoice(auth, id);
   }

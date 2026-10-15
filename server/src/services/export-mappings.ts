@@ -285,7 +285,7 @@ export async function runExportMapping(auth: AuthContext, id: string, from: stri
     return { bytes: new TextEncoder().encode(text), fileName: `${base}.csv`, contentType: 'text/csv; charset=utf-8', rows: table.length };
   }
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'SupplyLine';
+  wb.creator = 'Bowron';
   const ws = wb.addWorksheet('Export');
   const head = ws.addRow(map.columns.map((c) => c.header));
   head.font = { bold: true };

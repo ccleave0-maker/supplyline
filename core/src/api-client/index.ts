@@ -274,7 +274,7 @@ export function createApi(opts: ApiClientOptions) {
       const saved = cacheKey ? readOffline(cacheKey) : null;
       setOffline({ savedAt: saved?.at ?? null });
       if (saved) return JSON.parse(saved.text) as T;
-      throw new ApiError(0, 'network', method === 'GET' ? "You're offline and this hasn't been opened on this device before." : "Can't reach SupplyLine. Check your connection and try again — nothing was saved.");
+      throw new ApiError(0, 'network', method === 'GET' ? "You're offline and this hasn't been opened on this device before." : "Can't reach Bowron. Check your connection and try again — nothing was saved.");
     }
     setOffline(null);
     const text = await res.text();
@@ -314,7 +314,7 @@ export function createApi(opts: ApiClientOptions) {
         body === undefined ? { headers: authHeaders() } : { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
       );
     } catch {
-      throw new ApiError(0, 'network', "Can't reach SupplyLine. Check your connection and try again.");
+      throw new ApiError(0, 'network', "Can't reach Bowron. Check your connection and try again.");
     }
     if (!res.ok) {
       const data = await res.json().catch(() => null);
@@ -589,7 +589,7 @@ export function createApi(opts: ApiClientOptions) {
       send: (id: string, input?: OutboxEditInput) => post<OutboxItem>(`/outbox/${enc(id)}/send`, input),
       discard: (id: string) => del<{ ok: true }>(`/outbox/${enc(id)}`),
     },
-    /** Photo of any SupplyLine QR code → where to go */
+    /** Photo of any Bowron QR code → where to go */
     scan: (file: Blob, fileName: string) => upload<UniversalScanResult>('/scan', file, fileName),
     exports: {
       /** Any list → Excel / PDF file */

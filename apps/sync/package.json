@@ -2,7 +2,7 @@
   "name": "@supplyline/sync",
   "private": true,
   "version": "1.0.0",
-  "description": "SupplyLine Sync — network folders for hosted SupplyLine (filing copies and the AP inbox)",
+  "description": "Bowron Sync — network folders for hosted Bowron (filing copies and the AP inbox)",
   "type": "module",
   "bin": { "supplyline-sync": "supplyline-sync.mjs" },
   "engines": { "node": ">=22" },

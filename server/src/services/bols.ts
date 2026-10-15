@@ -555,7 +555,7 @@ async function shipInternal(auth: AuthContext, id: string) {
     const text =
       `${label} has shipped and is on its way to ${stop.location.businessName}${when ? ` – expected ${when}` : ''}.` +
       (truck ? `\nTruck: ${truck}` : '') +
-      `\n\n${items.map((l) => `  - ${l.description}: ${n(l.qty)} ${l.uom}`).join('\n')}\n\nOpen in SupplyLine: ${appLink(link)}`;
+      `\n\n${items.map((l) => `  - ${l.description}: ${n(l.qty)} ${l.uom}`).join('\n')}\n\nOpen in Bowron: ${appLink(link)}`;
     if (stop.location.siteId && stop.location.site?.type === 'JOB') {
       await notifyJob({
         organizationId: auth.orgId,
@@ -775,7 +775,7 @@ export async function receiveBol(auth: AuthContext, id: string, input: ReceiveBo
           replyTo: auth.email,
           to: [...to],
           subject: `${label} – received with ${problems} issue(s) at ${stop.location.businessName}`,
-          text: `${auth.name} received ${label} at ${stop.location.businessName}:\n\n${issues.join('\n')}${input.notes ? `\n\nNotes: ${input.notes}` : ''}\n\nOpen in SupplyLine: ${appLink(`/bols/view/?id=${id}`)}`,
+          text: `${auth.name} received ${label} at ${stop.location.businessName}:\n\n${issues.join('\n')}${input.notes ? `\n\nNotes: ${input.notes}` : ''}\n\nOpen in Bowron: ${appLink(`/bols/view/?id=${id}`)}`,
         },
         { organizationId: auth.orgId, relatedType: 'bol_problem', relatedId: receipt.id },
       );
@@ -793,7 +793,7 @@ export async function receiveBol(auth: AuthContext, id: string, input: ReceiveBo
       event: 'BOL_DELIVERED',
       title: `${bolLabel(b)} delivered`,
       subject: `${bolLabel(b)} delivered – ${stop.location.businessName}`,
-      text: `${auth.name} received ${bolLabel(b)} at ${stop.location.businessName}${problems ? ` with ${problems} problem(s)` : ''}.\n\n${summary}\n\nOpen in SupplyLine: ${appLink(base.link)}`,
+      text: `${auth.name} received ${bolLabel(b)} at ${stop.location.businessName}${problems ? ` with ${problems} problem(s)` : ''}.\n\n${summary}\n\nOpen in Bowron: ${appLink(base.link)}`,
     });
     if (problems)
       await notifyJob({
@@ -801,7 +801,7 @@ export async function receiveBol(auth: AuthContext, id: string, input: ReceiveBo
         event: 'DELIVERY_PROBLEM',
         title: `Problem with ${bolLabel(b)}`,
         subject: `Short / damaged delivery – ${bolLabel(b)} at ${stop.location.businessName}`,
-        text: `${auth.name} received ${bolLabel(b)} at ${stop.location.businessName} with ${problems} problem(s):\n\n${summary}${input.notes ? `\n\nNotes: ${input.notes}` : ''}\n\nOpen in SupplyLine: ${appLink(base.link)}`,
+        text: `${auth.name} received ${bolLabel(b)} at ${stop.location.businessName} with ${problems} problem(s):\n\n${summary}${input.notes ? `\n\nNotes: ${input.notes}` : ''}\n\nOpen in Bowron: ${appLink(base.link)}`,
       });
   }
   publishOrders(auth.orgId, { companyId: b.companyId, lines });

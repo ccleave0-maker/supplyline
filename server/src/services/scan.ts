@@ -164,7 +164,7 @@ async function scanDocumentInner(auth: AuthContext, file: File, mode: 'yard' | '
 }
 
 // ---------------------------------------------------------------------------
-// One Scan button for everything: any SupplyLine QR (or a printed BOL / PO number)
+// One Scan button for everything: any Bowron QR (or a printed BOL / PO number)
 // ---------------------------------------------------------------------------
 async function resolveTarget(auth: AuthContext, kind: ScanTarget['kind'], id: string): Promise<ScanTarget | null> {
   const companies = await accessibleCompanyIds(auth);

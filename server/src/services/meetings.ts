@@ -290,7 +290,7 @@ export async function addMeetingAudio(auth: AuthContext, id: string, file: File)
 async function checkAssignee(auth: AuthContext, input: ActionItemInput) {
   if (!input.assigneeUserId) return null;
   const u = await db.user.findFirst({ where: { id: input.assigneeUserId, organizationId: auth.orgId }, select: { id: true, name: true, email: true, active: true } });
-  if (!u) throw badRequest('That person isn’t in SupplyLine.');
+  if (!u) throw badRequest('That person isn’t in Bowron.');
   return u;
 }
 
@@ -305,9 +305,9 @@ async function tellAssignee(auth: AuthContext, a: { id: string; text: string; du
       organizationId: auth.orgId,
       companyId,
       key: 'ACTION_ASSIGNED',
-      vars: { assigneeName: u.name, actionText: a.text, meetingTitle: meeting?.title ?? 'SupplyLine', dueDate: dateOnly(a.dueDate) ?? 'no date set', senderName: auth.name },
+      vars: { assigneeName: u.name, actionText: a.text, meetingTitle: meeting?.title ?? 'Bowron', dueDate: dateOnly(a.dueDate) ?? 'no date set', senderName: auth.name },
       to: [u.email],
-      fromName: `${auth.name} via SupplyLine`,
+      fromName: `${auth.name} via Bowron`,
       replyTo: auth.email,
       relatedType: 'action_item',
       relatedId: a.id,
@@ -446,7 +446,7 @@ export async function finishMeeting(auth: AuthContext, id: string, opts: { email
       key: 'MEETING_MINUTES',
       vars: { meetingTitle: m.title, meetingDate: when, actionList: actions.map((a) => `- ${a.text} (${a.who}, due ${a.due})`).join('\n') || 'None', senderName: auth.name, companyName: company.name },
       to,
-      fromName: `${auth.name} via SupplyLine`,
+      fromName: `${auth.name} via Bowron`,
       replyTo: auth.email,
       attachmentFileIds: [asset.id],
       relatedType: 'meeting',

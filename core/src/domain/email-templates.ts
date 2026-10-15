@@ -35,7 +35,7 @@ export const EMAIL_TEMPLATES: EmailTemplateDef[] = [
     audience: "The job's project manager and the company's PO copy list",
     mode: 'AUTO',
     subject: 'PO {{poNumber}} issued – {{target}} – {{total}}',
-    body: '{{senderName}} issued PO {{poNumber}} to {{vendorName}} for {{target}}.\n\nTotal: {{total}}\nExpected: {{expectedDate}}\nDeliver to: {{deliverTo}}\n{{pstNote}}\n\nThe priced PO is attached.\nOpen in SupplyLine: {{link}}',
+    body: '{{senderName}} issued PO {{poNumber}} to {{vendorName}} for {{target}}.\n\nTotal: {{total}}\nExpected: {{expectedDate}}\nDeliver to: {{deliverTo}}\n{{pstNote}}\n\nThe priced PO is attached.\nOpen in Bowron: {{link}}',
     vars: PO_VARS,
   },
   {
@@ -44,7 +44,7 @@ export const EMAIL_TEMPLATES: EmailTemplateDef[] = [
     audience: 'Yard receivers (or the job, for direct deliveries)',
     mode: 'AUTO',
     subject: 'Coming in: PO {{poNumber}} from {{vendorName}} – expected {{expectedDate}}',
-    body: 'PO {{poNumber}} from {{vendorName}} for {{target}} is on order.\n\nExpected: {{expectedDate}}\nDeliver to: {{deliverTo}}\n\nThe packing list (no prices) is attached.\nReceive it in SupplyLine: {{link}}',
+    body: 'PO {{poNumber}} from {{vendorName}} for {{target}} is on order.\n\nExpected: {{expectedDate}}\nDeliver to: {{deliverTo}}\n\nThe packing list (no prices) is attached.\nReceive it in Bowron: {{link}}',
     vars: PO_VARS,
   },
   {
@@ -80,7 +80,7 @@ export const EMAIL_TEMPLATES: EmailTemplateDef[] = [
     audience: 'Procurement',
     mode: 'AUTO',
     subject: '{{orderLabel}} – {{siteName}} – {{lineCount}} line(s)',
-    body: 'Please see attached list for processing.\n\n{{orderLabel}} – {{siteName}}\nSubmitted by {{senderName}}\n\nOpen in SupplyLine: {{link}}',
+    body: 'Please see attached list for processing.\n\n{{orderLabel}} – {{siteName}}\nSubmitted by {{senderName}}\n\nOpen in Bowron: {{link}}',
     vars: ['orderLabel', 'siteName', 'lineCount', 'senderName', 'link', 'companyName'],
   },
   {
@@ -89,7 +89,7 @@ export const EMAIL_TEMPLATES: EmailTemplateDef[] = [
     audience: 'Yard',
     mode: 'AUTO',
     subject: 'Stock check: {{orderLabel}} – {{siteName}}',
-    body: 'Please confirm what you have available for stock.\n\n{{orderLabel}} – {{siteName}}\nSubmitted by {{senderName}}\n\nOpen in SupplyLine: {{link}}',
+    body: 'Please confirm what you have available for stock.\n\n{{orderLabel}} – {{siteName}}\nSubmitted by {{senderName}}\n\nOpen in Bowron: {{link}}',
     vars: ['orderLabel', 'siteName', 'lineCount', 'senderName', 'link', 'companyName'],
   },
   {
@@ -134,7 +134,7 @@ export const EMAIL_TEMPLATES: EmailTemplateDef[] = [
     audience: 'The person it was given to',
     mode: 'AUTO',
     subject: 'Action item: {{actionText}}',
-    body: 'Hello {{assigneeName}},\n\nFrom {{meetingTitle}}: {{actionText}}\nDue: {{dueDate}}\n\nMark it done in SupplyLine under Action items.\n\n{{senderName}}',
+    body: 'Hello {{assigneeName}},\n\nFrom {{meetingTitle}}: {{actionText}}\nDue: {{dueDate}}\n\nMark it done in Bowron under Action items.\n\n{{senderName}}',
     vars: ['assigneeName', 'actionText', 'meetingTitle', 'dueDate', 'senderName'],
   },
 ];

@@ -74,12 +74,12 @@ export async function buildMe(userId: string, sessionId?: string): Promise<Me> {
 
 /** What an admin should know about the subscription (shown as a banner). */
 export function billingNotice(o: { plan: string; trialEndsAt: Date | null; billingStatus: string }): string | null {
-  if (o.billingStatus === 'PAST_DUE') return 'The last payment for SupplyLine didn’t go through. Update the card under Account › Billing.';
+  if (o.billingStatus === 'PAST_DUE') return 'The last payment for Bowron didn’t go through. Update the card under Account › Billing.';
   if (o.plan === 'TRIAL' && o.trialEndsAt) {
     const days = Math.ceil((o.trialEndsAt.getTime() - Date.now()) / 86_400_000);
-    if (days < 0) return 'Your SupplyLine trial has ended. Choose a plan under Account › Billing to keep going.';
-    if (days <= 7) return `Your SupplyLine trial ends in ${days} day${days === 1 ? '' : 's'}. Choose a plan under Account › Billing.`;
+    if (days < 0) return 'Your Bowron trial has ended. Choose a plan under Account › Billing to keep going.';
+    if (days <= 7) return `Your Bowron trial ends in ${days} day${days === 1 ? '' : 's'}. Choose a plan under Account › Billing.`;
   }
-  if (o.billingStatus === 'CANCELLED' && o.plan !== 'FREE' && o.plan !== 'CUSTOM') return 'Your SupplyLine subscription was cancelled. Choose a plan under Account › Billing.';
+  if (o.billingStatus === 'CANCELLED' && o.plan !== 'FREE' && o.plan !== 'CUSTOM') return 'Your Bowron subscription was cancelled. Choose a plan under Account › Billing.';
   return null;
 }

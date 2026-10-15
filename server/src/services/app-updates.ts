@@ -1,6 +1,6 @@
 // PC app auto-update: the platform owner publishes a signed Windows installer
 // (made by "pnpm desktop:build" with the update-signing key), and every installed
-// SupplyLine PC app picks it up from here.
+// Bowron PC app picks it up from here.
 
 import { compareVersions } from '@supplyline/core/domain';
 import { requirePermission, type AuthContext } from '../lib/auth';

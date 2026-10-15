@@ -1,6 +1,6 @@
-// Network filing: every document SupplyLine makes is copied into the company's
-// folders by type (e.g. P:\SupplyLine\FCP\Jobs\2249 Bridge\BOLs). The server
-// writes them itself when it can reach the folder (DIRECT), or the SupplyLine
+// Network filing: every document Bowron makes is copied into the company's
+// folders by type (e.g. P:\Bowron\FCP\Jobs\2249 Bridge\BOLs). The server
+// writes them itself when it can reach the folder (DIRECT), or the Bowron
 // Sync app on a PC on your network collects and writes them (SYNC).
 
 import { createHash, randomBytes } from 'node:crypto';
@@ -30,7 +30,7 @@ export async function getFilingSettings(auth: AuthContext, companyId: string) {
 export async function saveFilingSettings(auth: AuthContext, companyId: string, input: FilingSettings) {
   requirePermission(auth, 'integrations:manage');
   const c = await assertCompanyAccessible(auth, companyId);
-  if (input.enabled && input.mode === 'DIRECT' && !isFullPath(input.root)) throw badRequest('Enter the full folder path, e.g. P:\\SupplyLine or \\\\server\\share\\SupplyLine.');
+  if (input.enabled && input.mode === 'DIRECT' && !isFullPath(input.root)) throw badRequest('Enter the full folder path, e.g. P:\\Bowron or \\\\server\\share\\Bowron.');
   if (input.enabled && input.mode === 'SYNC' && !input.root.trim()) throw badRequest('Enter the folder the Sync app should write into (a path on that PC).');
   await db.company.update({ where: { id: companyId }, data: { settings: { ...((c.settings as Record<string, unknown>) ?? {}), filing: input } } });
   await audit(db, auth, 'company.filing', 'Company', companyId, null, input);
@@ -135,7 +135,7 @@ export async function retryFiling(auth: AuthContext) {
 }
 
 // ---------------------------------------------------------------------------
-// SupplyLine Sync app devices
+// Bowron Sync app devices
 // ---------------------------------------------------------------------------
 const hash = (t: string) => createHash('sha256').update(t).digest('hex');
 

@@ -131,7 +131,7 @@ export async function insights(auth: AuthContext, days = 90): Promise<InsightsVi
       { key: 'off-list', title: 'Bought off the order list', detail: 'PO lines that weren’t on the job’s order list — maybe the list is missing things.', rows: offList.map((o) => ({ label: siteNames.get(o.siteId) ?? 'Job', value: o._count._all, href: `/yard/by-job/?siteId=${o.siteId}` })) },
       { key: 'problems', title: 'Delivery problems by vendor', detail: 'Lines received short, damaged or wrong.', rows: tally(problems.map((p) => p.yardReceipt.purchaseOrder?.vendor.name ?? 'No PO')).map(([label, value]) => ({ label, value })) },
       { key: 'late', title: 'Late deliveries by vendor', detail: 'Issued POs past their expected date and not fully received.', rows: lateVendors.map(([label, value]) => ({ label, value })) },
-      { key: 'defaults', title: 'Suggested defaults', detail: 'How often people keep what SupplyLine suggests. Low numbers mean the suggestion needs work.', rows: changedRows },
+      { key: 'defaults', title: 'Suggested defaults', detail: 'How often people keep what Bowron suggests. Low numbers mean the suggestion needs work.', rows: changedRows },
       {
         key: 'assistant',
         title: 'Assistant',

@@ -21,7 +21,7 @@ export interface ClientInfo {
   ip: string | null;
 }
 
-const NOT_INVITED = "This email hasn't been invited to SupplyLine. Ask your administrator for an invite.";
+const NOT_INVITED = "This email hasn't been invited to Bowron. Ask your administrator for an invite.";
 
 async function findActiveInvite(email: string) {
   return db.invite.findFirst({
@@ -54,9 +54,9 @@ export async function requestLoginCode(rawEmail: string, client: ClientInfo): Pr
     {
       fromName: env().EMAIL_FROM_NAME,
       to: [email],
-      subject: `Your SupplyLine sign-in code: ${code}`,
+      subject: `Your Bowron sign-in code: ${code}`,
       text:
-        `Your SupplyLine sign-in code is ${code}\n\n` +
+        `Your Bowron sign-in code is ${code}\n\n` +
         `It expires in ${CODE_TTL_MINUTES} minutes. If you didn't try to sign in, you can ignore this email.`,
     },
     { organizationId: user?.organizationId ?? null, relatedType: 'login' },

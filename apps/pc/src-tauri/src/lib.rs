@@ -1,7 +1,7 @@
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        // Auto-update: checks the SupplyLine server for a newer signed version.
+        // Auto-update: checks the Bowron server for a newer signed version.
         .setup(|app| {
             #[cfg(desktop)]
             {
@@ -11,5 +11,5 @@ pub fn run() {
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("error while running SupplyLine");
+        .expect("error while running Bowron");
 }

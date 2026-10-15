@@ -1,4 +1,4 @@
-// SupplyLine core: business logic, data models, API client and shared UI.
+// Bowron core: business logic, data models, API client and shared UI.
 // Never calls device features directly — always through @supplyline/platform.
 export * from './models';
 export * from './domain';

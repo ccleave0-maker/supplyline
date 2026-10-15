@@ -1,6 +1,6 @@
 # App store checklist (Apple App Store and Google Play)
 
-Already in SupplyLine:
+Already in Bowron:
 - [x] Privacy policy and terms pages (`/legal/privacy`, `/legal/terms`), linked from sign-in
 - [x] Delete my account inside the app (Account › Delete my account) — required by both stores
 - [x] Sign-in without passwords (email code); no account creation in the app (invite-only, business tool)

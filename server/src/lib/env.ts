@@ -17,7 +17,7 @@ const schema = z.object({
   RESEND_API_KEY: z.string().default(''),
   SENDGRID_API_KEY: z.string().default(''),
   EMAIL_FROM_ADDRESS: z.string().default('no-reply@example.com'),
-  EMAIL_FROM_NAME: z.string().default('SupplyLine'),
+  EMAIL_FROM_NAME: z.string().default('Bowron'),
   STORAGE_PROVIDER: z.enum(['local', 'supabase']).default('local'),
   SUPABASE_URL: z.string().default(''),
   SUPABASE_SERVICE_ROLE_KEY: z.string().default(''),

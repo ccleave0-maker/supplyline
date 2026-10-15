@@ -197,7 +197,7 @@ function BoardSettingsCard({ value, onSaved }: { value: BoardSettings; onSaved: 
         {s.mapProvider === 'google' && (
           <TextField
             label="Google Maps key"
-            hint="From Google Cloud (Maps JavaScript API) on your own account. Restrict it to your SupplyLine address."
+            hint="From Google Cloud (Maps JavaScript API) on your own account. Restrict it to your Bowron address."
             value={s.googleMapsKey ?? ''}
             onChange={(e) => setS({ ...s, googleMapsKey: e.target.value || null })}
           />

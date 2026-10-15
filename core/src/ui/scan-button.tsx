@@ -9,7 +9,7 @@ import { useAction } from './hooks';
 import { useSession } from './session';
 
 /**
- * Scan from anywhere: takes a photo of any SupplyLine QR code (BOL, PO, packing
+ * Scan from anywhere: takes a photo of any Bowron QR code (BOL, PO, packing
  * list, order list, equipment tag, meeting minutes) and opens the right screen.
  * "icon" = the camera button in the top bar; "big" = a large button on a page.
  */
@@ -26,7 +26,7 @@ export function ScanButton({ variant = 'big', className }: { variant?: 'icon' | 
     if (r.target) return router.push(r.target.link);
     // Nothing recognised: the scan page lets them try again or type the number.
     if (variant === 'icon') return router.push(paths.scan());
-    setNote('No SupplyLine code found. Try again closer with good light, or type the number on the Scan page.');
+    setNote('No Bowron code found. Try again closer with good light, or type the number on the Scan page.');
   });
   if (variant === 'icon')
     return (

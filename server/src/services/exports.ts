@@ -26,7 +26,7 @@ export async function exportTable(auth: AuthContext, input: TableExportInput): P
     return { bytes: new Uint8Array(bytes), fileName: `${safeName(input.title)}-${stamp}.pdf`, contentType: 'application/pdf' };
   }
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'SupplyLine';
+  wb.creator = 'Bowron';
   const ws = wb.addWorksheet(input.title.slice(0, 31).replace(/[\\/?*[\]:]/g, ' '));
   let r = 1;
   ws.getCell(r, 1).value = input.title;

@@ -50,7 +50,7 @@ const s = StyleSheet.create({
 
 function OrderDoc({ d }: { d: OrderPdfData }) {
   return (
-    <Document title={`${d.label} – ${d.siteName}`} author={d.companyName} creator="SupplyLine">
+    <Document title={`${d.label} – ${d.siteName}`} author={d.companyName} creator="Bowron">
       <Page size="LETTER" orientation="landscape" style={s.page}>
         <View style={s.header}>
           <View>

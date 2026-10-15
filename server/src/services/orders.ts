@@ -444,7 +444,7 @@ export async function submitOrder(auth: AuthContext, id: string): Promise<Submit
     event: 'ORDER_SUBMITTED',
     title: `${formatListLabel(submitted.site.jobNumber, submitted.listNo)} submitted`,
     subject: `${formatListLabel(submitted.site.jobNumber, submitted.listNo)} submitted – ${submitted.site.name}`,
-    text: `${auth.name} submitted ${formatListLabel(submitted.site.jobNumber, submitted.listNo)} (${submitted.lines.length} line(s)) for ${submitted.site.name}.\n\nOpen in SupplyLine: ${env().APP_URL.replace(/\/$/, '')}/orders/view/?id=${id}`,
+    text: `${auth.name} submitted ${formatListLabel(submitted.site.jobNumber, submitted.listNo)} (${submitted.lines.length} line(s)) for ${submitted.site.name}.\n\nOpen in Bowron: ${env().APP_URL.replace(/\/$/, '')}/orders/view/?id=${id}`,
     link: `/orders/view/?id=${id}`,
     fromName: viaName(auth.name),
     replyTo: auth.email,

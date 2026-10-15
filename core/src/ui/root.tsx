@@ -7,7 +7,7 @@ import { ColorModeProvider } from './color-mode';
 import { SessionProvider } from './session';
 
 /** The whole app, given a platform implementation. Every app in apps/ renders this. */
-export function SupplyLineRoot({ platform, children }: { platform: Platform; children: ReactNode }) {
+export function BowronRoot({ platform, children }: { platform: Platform; children: ReactNode }) {
   return (
     <PlatformProvider platform={platform}>
       <ColorModeProvider>

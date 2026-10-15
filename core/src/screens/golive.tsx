@@ -31,7 +31,7 @@ export function BillingScreen() {
   const d = b.data;
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader title="Billing" subtitle="Your SupplyLine plan." />
+      <PageHeader title="Billing" subtitle="Your Bowron plan." />
       {params.get('done') && <Notice>Thanks — your subscription is being set up. It shows here within a minute.</Notice>}
       <ErrorBanner error={checkout.error || portal.error} />
       <Card title={d.planLabel}>
@@ -72,7 +72,7 @@ export function BillingScreen() {
               </Button>
             ))}
           </div>
-          <p className="mt-2 text-sm text-muted">You’ll pay securely on Stripe’s page; card details never touch SupplyLine.</p>
+          <p className="mt-2 text-sm text-muted">You’ll pay securely on Stripe’s page; card details never touch Bowron.</p>
         </Card>
       )}
       {d.canManage && (
@@ -162,7 +162,7 @@ export function PushToggle() {
     const reg = (await navigator.serviceWorker.getRegistration()) ?? (await navigator.serviceWorker.register('/sw.js'));
     await navigator.serviceWorker.ready;
     if (want) {
-      if ((await Notification.requestPermission()) !== 'granted') throw new Error('Notifications are blocked for SupplyLine. Allow them in the browser’s site settings, then try again.');
+      if ((await Notification.requestPermission()) !== 'granted') throw new Error('Notifications are blocked for Bowron. Allow them in the browser’s site settings, then try again.');
       const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(key!) });
       const j = sub.toJSON() as { endpoint: string; keys: { p256dh: string; auth: string } };
       await api.push.register({ endpoint: j.endpoint, keys: j.keys });
@@ -177,10 +177,10 @@ export function PushToggle() {
     }
   });
   if (!key) return <p className="text-sm text-muted">Push notifications aren’t set up on this server yet.</p>;
-  if (!supported) return <p className="text-sm text-muted">This device can’t get push notifications from SupplyLine here. Use the bell at the top, or install SupplyLine from the browser (“Add to Home Screen”).</p>;
+  if (!supported) return <p className="text-sm text-muted">This device can’t get push notifications from Bowron here. Use the bell at the top, or install Bowron from the browser (“Add to Home Screen”).</p>;
   return (
     <div>
-      <Checkbox label="Push notifications on this device" description="Get BOL, delivery, approval and action-item alerts even when SupplyLine is closed." checked={!!on} disabled={on === null || toggle.busy} onChange={(v) => void toggle.run(v)} />
+      <Checkbox label="Push notifications on this device" description="Get BOL, delivery, approval and action-item alerts even when Bowron is closed." checked={!!on} disabled={on === null || toggle.busy} onChange={(v) => void toggle.run(v)} />
       <ErrorBanner error={toggle.error} />
     </div>
   );
@@ -226,7 +226,7 @@ const FEATURES: [string, string][] = [
   ['Order lists from the field', 'Crews order on a phone, tablet or PC — typed, pasted from Excel, or by voice. Every list is numbered per job.'],
   ['Yard, buying and POs', 'Stock checks, quotes read by AI, purchase orders with PST/GST worked out, vendor follow-ups.'],
   ['Shipping and loads', 'Multi-stop BOLs with QR codes, a load builder that flags oversize and overweight, and a schedule.'],
-  ['Receiving by photo', 'Snap the BOL or packing slip — SupplyLine matches it and flags shortages.'],
+  ['Receiving by photo', 'Snap the BOL or packing slip — Bowron matches it and flags shortages.'],
   ['Vendor invoices and billing', 'AP inbox matched to POs, approvals, holdback, customer invoices and accountant exports.'],
   ['Meetings and action items', 'Run your 70-30 meeting step by step, record it, and send the minutes with who-does-what.'],
 ];

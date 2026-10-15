@@ -136,7 +136,7 @@ export function AccountingSettingsScreen() {
 
       <Card title="Network folders">
         <p className="mb-2 text-sm text-muted">
-          AP drops invoices into the inbox folder; SupplyLine picks them up every 2 minutes and moves each file along as it goes. Use a full path the server can reach, e.g. <code>P:\AP\Inbox</code> or <code>\\server\share\AP\Inbox</code>. (Once SupplyLine is online, the SupplyLine Sync app on your network does this.)
+          AP drops invoices into the inbox folder; Bowron picks them up every 2 minutes and moves each file along as it goes. Use a full path the server can reach, e.g. <code>P:\AP\Inbox</code> or <code>\\server\share\AP\Inbox</code>. (Once Bowron is online, the Bowron Sync app on your network does this.)
         </p>
         <div className="grid gap-3 sm:grid-cols-2">
           {(
@@ -634,7 +634,7 @@ export function AccountingExportsScreen() {
   const cols = useMemo(() => (rows?.[0] ? Object.keys(rows[0]).map((k) => ({ key: k, label: k.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase()), align: typeof rows[0]![k] === 'number' ? ('right' as const) : undefined })) : []), [rows]);
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader back={paths.ap()} title="Exports for the accountant" subtitle="Clean AP, AR and GST/PST data to post in their own software. (SupplyLine doesn't do year-end posting.)" />
+      <PageHeader back={paths.ap()} title="Exports for the accountant" subtitle="Clean AP, AR and GST/PST data to post in their own software. (Bowron doesn't do year-end posting.)" />
       <Card>
         <div className="grid gap-3 sm:grid-cols-4">
           <SelectField

@@ -1,4 +1,4 @@
-// Full data export: everything the organization has in SupplyLine as one ZIP —
+// Full data export: everything the organization has in Bowron as one ZIP —
 // a JSON file per table plus the uploaded/generated files — so a customer can
 // always take their data with them. Sign-in secrets and stored keys are left out.
 
@@ -115,7 +115,7 @@ export async function exportAllData(auth: AuthContext, opts: { includeFiles: boo
   zip.file(
     'README.txt',
     [
-      `SupplyLine data export — ${org.name}`,
+      `Bowron data export — ${org.name}`,
       `Made ${new Date().toISOString()} by ${auth.email}`,
       '',
       'data/   one JSON file per table (ids link the tables together)',
@@ -129,5 +129,5 @@ export async function exportAllData(auth: AuthContext, opts: { includeFiles: boo
 
   const bytes = await zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE', compressionOptions: { level: 6 } });
   await audit(db, auth, 'org.data_export', 'Organization', auth.orgId, null, { includeFiles: opts.includeFiles, tables: Object.keys(counts).length, filesSkipped: notIncluded.length });
-  return { bytes, fileName: `SupplyLine-export-${safe(org.name).replace(/\s+/g, '-')}-${new Date().toISOString().slice(0, 10)}.zip` };
+  return { bytes, fileName: `Bowron-export-${safe(org.name).replace(/\s+/g, '-')}-${new Date().toISOString().slice(0, 10)}.zip` };
 }
