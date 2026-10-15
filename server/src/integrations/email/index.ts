@@ -41,6 +41,11 @@ const smtpProvider: EmailProvider = {
       port: e.SMTP_PORT,
       secure: e.SMTP_PORT === 465,
       auth: { user: e.SMTP_USER, pass: e.SMTP_PASSWORD },
+      // Fail fast where outgoing mail ports are blocked (e.g. some hosts' cheaper plans)
+      // instead of keeping someone waiting on the sign-in screen.
+      connectionTimeout: 10_000,
+      greetingTimeout: 10_000,
+      socketTimeout: 20_000,
     });
     const info = await smtpTransport.sendMail({
       from: { name: msg.fromName, address: msg.fromAddress },
